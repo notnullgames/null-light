@@ -44,12 +44,11 @@ proc newNull0Game*(filename: string): Null0Game =
   game.files = openZipArchive(filename)
   game.images.add(newContext(320, 240))
   let wasmBytes = game.readFile("main.wasm")
-  echo wasmBytes
-  # game.env = loadWasmEnv(wasmBytes)
-  # game.wload = game.env.findFunction("load")
-  # game.wupdate = game.env.findFunction("update")
-  # game.wclose = game.env.findFunction("close")
-  # game.start = cpuTime()
-  # if game.wload != nil:
-  #   game.wload.call(void)
-  # return game
+  game.env = loadWasmEnv(wasmBytes)
+  game.wload = game.env.findFunction("load")
+  game.wupdate = game.env.findFunction("update")
+  game.wclose = game.env.findFunction("close")
+  game.start = cpuTime()
+  if game.wload != nil:
+    game.wload.call(void)
+  return game
