@@ -45,14 +45,11 @@ proc newNull0Game*(filename: string): Null0Game =
   game.images.add(newContext(320, 240))
   let wasmBytes = game.readFile("main.wasm")
 
-  proc exportTrace(runtime: PRuntime; ctx: PImportContext; sp: ptr uint64; mem: pointer): pointer {.cdecl.} =
-    proc procImpl(text: cstring) =
-      echo text
-    var s = sp.stackPtrToUint()
-    callHost(procImpl, s, mem)
+  proc exportTrace(text: cstring) =
+    echo text
 
   game.env = loadWasmEnv(wasmBytes,  hostProcs = [
-    wasmHostProc( "*", "trace", "v(*)", exportTrace)
+    exportTrace.toWasmHostProc("*", "trace", "v(*)")
   ])
 
   game.wload = game.env.findFunction("load")
