@@ -3,6 +3,7 @@ import pixie
 import wasm3
 import wasm3/wasm3c
 import std/times
+import api_graphics
 
 type
   Null0Game* = object
@@ -48,7 +49,7 @@ proc newNull0Game*(filename: string): Null0Game =
   proc exportTrace(text: cstring) =
     echo text
 
-  game.env = loadWasmEnv(wasmBytes,  hostProcs = [
+  game.env = loadWasmEnv(wasmBytes, loadAlloc = true,  hostProcs = [
     exportTrace.toWasmHostProc("*", "trace", "v(*)")
   ])
 
