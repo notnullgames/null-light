@@ -30,5 +30,5 @@ if args["watch"]:
   echo "watch is not implemented, yet."
 
 if args["<cart>"]:
-  var game = newNull0Game($args["<cart>"], args["--debug"])
-
+  null0_load($args["<cart>"], args["--debug"])
+  null0_unload()
