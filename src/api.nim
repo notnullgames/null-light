@@ -4,84 +4,154 @@ import wasm3
 import wasm3/wasm3c
 import std/times
 
-# I can't figure out how to contain these in a shared object
-# so they are just globals for now
+# This is how data is passed over the wasm-barrier
+type
+  WasmVector2 {.packed.} = object
+    x: int32
+    y: int32
+  WasmColor {.packed.} = object
+    b: uint8
+    g: uint8
+    r: uint8
+    a: uint8
+
+proc fromWasm*(result: var WasmVector2, sp: var uint64, mem: pointer) =
+  var i: uint32
+  i.fromWasm(sp, mem)
+  result = cast[ptr WasmVector2](cast[uint64](mem) + i)[]
+
+proc fromWasm*(result: var WasmColor, sp: var uint64, mem: pointer) =
+  var i: uint32
+  i.fromWasm(sp, mem)
+  result = cast[ptr WasmColor](cast[uint64](mem) + i)[]
+
+proc vec2(i: WasmVector2): Vec2 =
+  return vec2(float i.x, float i.y)
+
+proc rgba(i: WasmColor): ColorRGBA =
+  return rgba(i.r, i.g, i.b, i.a)
+
+
+# TODO: I can't figure out how to contain these in a shared object, so they are just globals for now
 var null0_time_start*: float
 var null0_files*: ZipArchiveReader
 var null0_images*: seq[Context]
 var null0_fonts*: seq[Font]
-var null0_env: WasmEnv
-var wload: PFunction
-var wupdate: PFunction
-var wunload: PFunction
-var wbuttonUp: PFunction
-var wbuttonDown: PFunction
 
-proc exportTrace(text: cstring) =
-  ## Similar to echo, but much simpler
-  echo text
+var null0_export_load:PFunction
+var null0_export_update:PFunction
+var null0_export_unload:PFunction
+var null0_export_buttonDown:PFunction
+var null0_export_buttonUp:PFunction
 
-proc null0_load*(filename: string, debug: bool = false) =
-  null0_files = openZipArchive(filename)
-  null0_images.add(newContext(320, 240))
-  let wasmBytes = null0_files.extractFile("main.wasm")
-  null0_time_start = cpuTime()
+# TODO: these would be simpler in a macro
 
+proc export_trace(runtime: PRuntime; ctx: PImportContext; sp: ptr uint64; mem: pointer): pointer {.cdecl.} =
+  var sp = sp.stackPtrToUint()
+  proc procImpl(text: cstring) =
+    echo text
+  callHost(procImpl, sp, mem)
+
+proc export_load_image(runtime: PRuntime; ctx: PImportContext; sp: ptr uint64; mem: pointer): pointer {.cdecl.} =
+  var sp = sp.stackPtrToUint()
+  proc procImpl(filename: cstring): uint32 =
+    let i = len(null0_images)
+    null0_images.add(newContext(decodeImage(null0_files.extractFile($filename))))
+    return uint32 i
+  callHost(procImpl, sp, mem)
+
+proc export_draw_image(runtime: PRuntime; ctx: PImportContext; sp: ptr uint64; mem: pointer): pointer {.cdecl.} =
+  var sp = sp.stackPtrToUint()
+  proc procImpl(targetID: uint32, sourceID:uint32, x: int32, y: int32) =
+    discard
+  callHost(procImpl, sp, mem)
+
+proc export_dimensions(runtime: PRuntime; ctx: PImportContext; sp: ptr uint64; mem: pointer): pointer {.cdecl.} =
+  var sp = sp.stackPtrToUint()
+  proc procImpl(retPointer: uint32, sourceID: uint32) =
+    let v = WasmVector2(x: int32(null0_images[sourceID].image.width), y: int32(null0_images[sourceID].image.height))
+    cast[ptr WasmVector2](cast[uint64](mem) + retPointer)[] = v
+  callHost(procImpl, sp, mem)
+
+proc null0_setup_imports(module: PModule, debug: bool = false) =
   try:
-    null0_env = loadWasmEnv(wasmBytes, hostProcs = [
-      exportTrace.toWasmHostProc("*", "trace", "v(*)")
-    ])
-
-    try:
-      wload = null0_env.findFunction("load")
-    except WasmError as e:
-      if debug:
-        echo "export load: ", e.msg
-
-    try:
-      wupdate = null0_env.findFunction("update")
-    except WasmError as e:
-      if debug:
-        echo "export update: ", e.msg
-    
-    try:
-      wunload = null0_env.findFunction("unload")
-    except WasmError as e:
-      if debug:
-        echo "export unload: ", e.msg
-
-    try:
-      wButtonDown = null0_env.findFunction("buttonDown")
-    except WasmError as e:
-      if debug:
-        echo "export buttonDown: ", e.msg
-    
-    try:
-      wButtonUp = null0_env.findFunction("buttonUp")
-    except WasmError as e:
-      if debug:
-        echo "export buttonUp: ", e.msg
-
-    if wload != nil:
-      wload.call(void)
-  
+    checkWasmRes m3_LinkRawFunction(module, "*", "trace", "v(*)", export_trace)
   except WasmError as e:
     if debug:
-      echo "env: ", e.msg
+      echo "import trace: ", e.msg
+  try:
+    checkWasmRes m3_LinkRawFunction(module, "*", "load_image", "i(*)", export_load_image)
+  except WasmError as e:
+    if debug:
+      echo "import load_image: ", e.msg
+  try:
+    checkWasmRes m3_LinkRawFunction(module, "*", "draw_image", "v(iiii)", export_draw_image)
+  except WasmError as e:
+    if debug:
+      echo "import draw_image: ", e.msg
+  try:
+    # dimension(returnPtr, image)
+    checkWasmRes m3_LinkRawFunction(module, "*", "dimensions", "v(ii)", export_dimensions)
+  except WasmError as e:
+    if debug:
+      echo "import dimensions: ", e.msg
+
+proc null0_setup_exports(runtime: PRuntime, debug:bool = false) =
+  try:
+    checkWasmRes m3_FindFunction(null0_export_update.addr, runtime, "update")
+  except WasmError as e:
+    if debug:
+      echo "export update: ", e.msg
+  try:
+    checkWasmRes m3_FindFunction(null0_export_unload.addr, runtime, "unload")
+  except WasmError as e:
+    if debug:
+      echo "export unload: ", e.msg
+  try:
+    checkWasmRes m3_FindFunction(null0_export_load.addr, runtime, "load")
+  except WasmError as e:
+    if debug:
+      echo "export load: ", e.msg
+  try:
+    checkWasmRes m3_FindFunction(null0_export_buttonDown.addr, runtime, "buttonDown")
+  except WasmError as e:
+    if debug:
+      echo "export buttonDown: ", e.msg
+  try:
+    checkWasmRes m3_FindFunction(null0_export_buttonUp.addr, runtime, "buttonUp")
+  except WasmError as e:
+    if debug:
+      echo "export buttonUp: ", e.msg
+
+# TODO: currently this only loads zip, support dir & bare wasm
+proc null0_load*(filename: string, debug: bool = false) =
+  null0_time_start = cpuTime()
+
+  # image 0 is "screen"
+  null0_images.add(newContext(320, 240))
+  
+  null0_files = openZipArchive(filename)
+  let wasmBytes = null0_files.extractFile("main.wasm")
+  
+  var env = m3_NewEnvironment()
+  var runtime = env.m3_NewRuntime(uint32 uint16.high, nil)
+  var module: PModule
+  checkWasmRes m3_ParseModule(env, module.addr, cast[ptr uint8](unsafeAddr wasmBytes[0]), uint32 len(wasmBytes))
+  checkWasmRes m3_LoadModule(runtime, module)
+  null0_setup_imports(module, debug)
+  null0_setup_exports(runtime, debug)
+
+  if null0_export_load != nil:
+    null0_export_load.call(void)
 
 proc null0_unload*() =
-  if wunload != nil:
-    wunload.call(void)
+  if null0_export_unload != nil:
+    null0_export_unload.call(void)
   if null0_files != nil:
     null0_files.close()
 
-proc null_update*() =
+proc null0_update*() =
   ## Update the model of the game
-  if wupdate != nil:
-    wupdate.call(void, cpuTime() - null0_time_start)
-
-proc null_draw*(): Image =
-  ## Get the current image of the screen
-  if null0_images[0] != nil:
-    return null0_images[0].image
+  if null0_export_update != nil:
+    null0_export_update.call(void, cpuTime() - null0_time_start)
 
