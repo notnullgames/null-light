@@ -23,6 +23,8 @@ import std/strformat
 task clean, "Cleans up files":
   exec "rm -f null0 *.wasm *.null0 tests/test_api"
 
+# TODO: lookup type from game.json
+
 task cart, "Build a demo cart":
   let name = paramStr(paramCount())
   let dir = "carts/" & name

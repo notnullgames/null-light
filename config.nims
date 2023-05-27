@@ -1,3 +1,3 @@
---define:wasm3HasWasi
+# --define:wasm3HasWasi
 --mm:orc
 --cc:gcc

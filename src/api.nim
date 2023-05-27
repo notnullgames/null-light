@@ -38,7 +38,7 @@ proc readFile*(game: Null0Game, filename: string): string =
   ## Read a file from the current cart
   return game.files.extractFile(filename)
 
-proc newNull0Game*(filename: string, debug: bool = true): Null0Game =
+proc newNull0Game*(filename: string, debug: bool = false): Null0Game =
   ## Create a new Game instance
   var game: Null0Game
   game.files = openZipArchive(filename)
@@ -50,7 +50,7 @@ proc newNull0Game*(filename: string, debug: bool = true): Null0Game =
     echo text
 
   try:
-    game.env = loadWasmEnv(wasmBytes, loadAlloc = true,  hostProcs = [
+    game.env = loadWasmEnv(wasmBytes, hostProcs = [
       exportTrace.toWasmHostProc("*", "trace", "v(*)")
     ])
 
