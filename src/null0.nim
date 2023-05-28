@@ -80,7 +80,7 @@ if args["<cart>"]:
       offset.y = (fY - (float(windowSize.y) * scale)) / 2
       offset.x = 0
     
-    # XXX: this is clearing all the tiles every frame.
+    # TODO: this is clearing all the tiles every frame, which is very inefficient.
     bxy.clearAtlas()
     bxy.addImage("screen" & $frame, null0_images[0].image)
 
