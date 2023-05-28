@@ -28,7 +28,7 @@ Eventually there will be lots more options for different languages and targets, 
 
 ## Cart Layout
 
-Carts (.null0) are just zip files. They have this layout:
+Carts (.null0) are just zip files. Any file in the cart can be read by your code. They have this layout:
 
 ```
 ├── game.json
@@ -44,11 +44,12 @@ The `icon.png` and `game.json` are optional, but it will be used on the (eventua
   "description": "Demo that animates an image moving down",
   "language": "nim",
   "tags": ["demo", "drawing", "images"],
-  "author": "David Konsumer <@konsumer>"
+  "author": "David Konsumer <@konsumer>",
+  "source": "https://github.com/notnullgames/null-light/blob/main/carts/draw_image/main.nim"
 }
 ```
 
-Any file in the cart can be read by your code.
+Use `<@GITHUB_USER>` to link the game to your github account.
 
 ## Thanks
 
