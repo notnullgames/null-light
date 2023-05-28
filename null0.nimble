@@ -13,8 +13,10 @@ bin           = @["null0"]
 requires "nim >= 1.6.12"
 requires "zippy >= 0.10.10"
 requires "pixie >= 5.0.6"
-requires "docopt >= 0.7.0"
 requires "https://github.com/beef331/wasm3 >= 0.1.10"
+
+requires "docopt >= 0.7.0"
+requires "sdl2"
 
 import std/os
 import std/strutils

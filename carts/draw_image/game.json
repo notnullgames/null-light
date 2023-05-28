@@ -1,0 +1,5 @@
+{
+  "name": "Draw Image",
+  "description": "Demo cart that loads an image and draws it",
+  "language": "nim"
+}
