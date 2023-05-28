@@ -133,7 +133,10 @@ proc draw_image*(targetID: Image, sourceID:Image, position: Vector2) {.importc, 
 proc dimensions*(sourceID: Image): Vector2 {.importc, cdecl.}
 
 # Draw a filled-rectangle on image/canvas
-proc rect_filled*(targetID: Image, position:Vector2, dimensions:Vector2, color: Color = BLACK) {.importc, cdecl.}
+proc rect_filled*(targetID: Image, position:Vector2, dimensions:Vector2) {.importc, cdecl.}
+
+# Set current fill-color on image/canvas
+proc fill_color*(targetID: Image, color: Color) {.importc, cdecl.}
 
 ### Wrappers
 
@@ -149,11 +152,15 @@ proc draw_image*(sourceID: Image, position: Vector2) =
 proc draw*(sourceID: Image, position: Vector2) =
   draw_image(screen, sourceID, position)
 
-proc rect_filled*(position:Vector2, dimensions:Vector2, color: Color = BLACK) =
-  rect_filled(screen, position, dimensions, color)
+proc rect_filled*(position:Vector2, dimensions:Vector2) =
+  rect_filled(screen, position, dimensions)
+
+proc fill_color*(color: Color) =
+  fill_color(screen, color)
 
 proc clear*(targetID: Image, color: Color = BLACK) =
-  rect_filled(targetID, vec2(0, 0), vec2(320, 240), color)
+  fill_color(targetID, color)
+  rect_filled(targetID, vec2(0, 0), vec2(320, 240))
 
 proc clear*(color: Color = BLACK) =
   clear(screen, color)

@@ -75,9 +75,14 @@ proc export_dimensions(runtime: PRuntime; ctx: PImportContext; sp: ptr uint64; m
 
 proc export_rect_filled(runtime: PRuntime; ctx: PImportContext; sp: ptr uint64; mem: pointer): pointer {.cdecl.} =
   var sp = sp.stackPtrToUint()
-  proc procImpl(targetID: uint32, position:WasmVector2, dimensions:WasmVector2, color: WasmColor) =
-    null0_images[targetID].fillStyle = rgba(color)
+  proc procImpl(targetID: uint32, position:WasmVector2, dimensions:WasmVector2) =
     null0_images[targetID].fillRect(rect(vec2(position), vec2(dimensions)))
+  callHost(procImpl, sp, mem)
+
+proc export_fill_color(runtime: PRuntime; ctx: PImportContext; sp: ptr uint64; mem: pointer): pointer {.cdecl.} =
+  var sp = sp.stackPtrToUint()
+  proc procImpl(targetID: uint32, color: WasmColor) =
+    null0_images[targetID].fillStyle = rgba(color)
   callHost(procImpl, sp, mem)
 
 proc null0_setup_imports(module: PModule, debug: bool = false) =
@@ -103,10 +108,15 @@ proc null0_setup_imports(module: PModule, debug: bool = false) =
     if debug:
       echo "import dimensions: ", e.msg
   try:
-    checkWasmRes m3_LinkRawFunction(module, "*", "rect_filled", "v(i***)", export_rect_filled)
+    checkWasmRes m3_LinkRawFunction(module, "*", "rect_filled", "v(i**)", export_rect_filled)
   except WasmError as e:
     if debug:
       echo "import rect_filled: ", e.msg
+  try:
+    checkWasmRes m3_LinkRawFunction(module, "*", "fill_color", "v(i*)", export_fill_color)
+  except WasmError as e:
+    if debug:
+      echo "import fill_color: ", e.msg
 
 
   
