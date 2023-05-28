@@ -46,7 +46,7 @@ template unload*(body: untyped) {.dirty.} =
     body
 
 template update*(body: untyped) {.dirty.} =
-  proc update*(frame: int) {.null0.} =
+  proc update*(gameTime: float32) {.null0.} =
     body
 
 template buttonDown*(body: untyped) {.dirty.} =
@@ -132,14 +132,16 @@ proc draw_image*(targetID: Image, sourceID:Image, position: Vector2) {.importc, 
 # Get height/width of an image/canvas
 proc dimensions*(sourceID: Image): Vector2 {.importc, cdecl.}
 
+# Draw a filled-rectangle on image/canvas
+proc rect_filled*(targetID: Image, position:Vector2, dimensions:Vector2, color: Color = BLACK) {.importc, cdecl.}
 
 ### Wrappers
 
+proc trace*(thing: auto) =
+  trace(cstring $thing)
+
 proc load_image*(filename: string): Image =
   return load_image(cstring filename)
-
-proc draw_image*(targetID: Image, sourceID:Image, position: Vector2) =
-  draw_image(targetID, sourceID, position)
 
 proc draw_image*(sourceID: Image, position: Vector2) =
   draw_image(screen, sourceID, position)
@@ -147,4 +149,11 @@ proc draw_image*(sourceID: Image, position: Vector2) =
 proc draw*(sourceID: Image, position: Vector2) =
   draw_image(screen, sourceID, position)
 
+proc rect_filled*(position:Vector2, dimensions:Vector2, color: Color = BLACK) =
+  rect_filled(screen, position, dimensions, color)
 
+proc clear*(targetID: Image, color: Color = BLACK) =
+  rect_filled(targetID, vec2(0, 0), vec2(320, 240), color)
+
+proc clear*(color: Color = BLACK) =
+  clear(screen, color)

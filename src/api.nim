@@ -62,8 +62,8 @@ proc export_load_image(runtime: PRuntime; ctx: PImportContext; sp: ptr uint64; m
 
 proc export_draw_image(runtime: PRuntime; ctx: PImportContext; sp: ptr uint64; mem: pointer): pointer {.cdecl.} =
   var sp = sp.stackPtrToUint()
-  proc procImpl(targetID: uint32, sourceID:uint32, positionX: int32, positionY: int32) =
-    null0_images[targetID].image.draw(null0_images[sourceID].image, translate(vec2(float32 positionX, float32 positionY)))
+  proc procImpl(targetID: uint32, sourceID:uint32, position:WasmVector2) =
+    null0_images[targetID].image.draw(null0_images[sourceID].image, translate(vec2(position)))
   callHost(procImpl, sp, mem)
 
 proc export_dimensions(runtime: PRuntime; ctx: PImportContext; sp: ptr uint64; mem: pointer): pointer {.cdecl.} =
@@ -71,6 +71,13 @@ proc export_dimensions(runtime: PRuntime; ctx: PImportContext; sp: ptr uint64; m
   proc procImpl(retPointer: uint32, sourceID: uint32) =
     let v = WasmVector2(x: int32(null0_images[sourceID].image.width), y: int32(null0_images[sourceID].image.height))
     cast[ptr WasmVector2](cast[uint64](mem) + retPointer)[] = v
+  callHost(procImpl, sp, mem)
+
+proc export_rect_filled(runtime: PRuntime; ctx: PImportContext; sp: ptr uint64; mem: pointer): pointer {.cdecl.} =
+  var sp = sp.stackPtrToUint()
+  proc procImpl(targetID: uint32, position:WasmVector2, dimensions:WasmVector2, color: WasmColor) =
+    null0_images[targetID].fillStyle = rgba(color)
+    null0_images[targetID].fillRect(rect(vec2(position), vec2(dimensions)))
   callHost(procImpl, sp, mem)
 
 proc null0_setup_imports(module: PModule, debug: bool = false) =
@@ -85,8 +92,7 @@ proc null0_setup_imports(module: PModule, debug: bool = false) =
     if debug:
       echo "import load_image: ", e.msg
   try:
-    # draw_image(targetID, sourceID, positionX, positionY)
-    checkWasmRes m3_LinkRawFunction(module, "*", "draw_image", "v(iiii)", export_draw_image)
+    checkWasmRes m3_LinkRawFunction(module, "*", "draw_image", "v(ii*)", export_draw_image)
   except WasmError as e:
     if debug:
       echo "import draw_image: ", e.msg
@@ -96,6 +102,14 @@ proc null0_setup_imports(module: PModule, debug: bool = false) =
   except WasmError as e:
     if debug:
       echo "import dimensions: ", e.msg
+  try:
+    checkWasmRes m3_LinkRawFunction(module, "*", "rect_filled", "v(i***)", export_rect_filled)
+  except WasmError as e:
+    if debug:
+      echo "import rect_filled: ", e.msg
+
+
+  
 
 proc null0_setup_exports(runtime: PRuntime, debug:bool = false) =
   try:
@@ -154,5 +168,5 @@ proc null0_unload*() =
 proc null0_update*() =
   ## Update the model of the game
   if null0_export_update != nil:
-    null0_export_update.call(void, cpuTime() - null0_time_start)
+    null0_export_update.call(void, float32 cpuTime() - null0_time_start)
 

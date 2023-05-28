@@ -1,0 +1,5 @@
+{
+  "name": "Draw Image: Animation",
+  "description": "Demo that animates an image moving around",
+  "language": "nim"
+}

@@ -2,7 +2,7 @@ var logo:Image
 var offset:Vector2
 
 load:
-  trace("Hello from draw_images")
+  trace("Hello from draw_image")
   logo = load_image("icon.png")
   offset = (screen.dimensions() / 2) - (logo.dimensions() / 2)
   trace("screen: " & $screen.dimensions())
@@ -10,7 +10,7 @@ load:
   trace("offset: " & $offset)
 
 update:
-  logo.draw(offset.x, offset.y)
+  logo.draw(offset)
 
 unload:
   trace("Ok, bye.")

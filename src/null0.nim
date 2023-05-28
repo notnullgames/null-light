@@ -57,7 +57,7 @@ if args["<cart>"]:
   let bxy = newBoxy()
 
   null0_load($args["<cart>"], args["--debug"])
-
+  
   let ratio = windowSize.x / windowSize.y
   var scale = 1.0
   var offset = vec2(0, 0)
@@ -80,15 +80,16 @@ if args["<cart>"]:
       offset.x = 0
 
     null0_update()
-
-    # This is maybe too inneficient, but I need to make a new image for every frame
-    bxy.addImage($frame, null0_images[0].image)
+    
+    # TODO: this is inefficient - it re-adds the screen-image every frame
+    bxy.clearAtlas()
+    bxy.addImage("screen", null0_images[0].image)
 
     bxy.beginFrame(window.size)
     bxy.saveTransform()
     bxy.translate(offset)
     bxy.scale(scale)
-    bxy.drawImage($frame, vec2(0, 0))
+    bxy.drawImage("screen", vec2(0, 0))
     bxy.restoreTransform()
     bxy.endFrame()
     window.swapBuffers()
