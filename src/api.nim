@@ -62,8 +62,8 @@ proc export_load_image(runtime: PRuntime; ctx: PImportContext; sp: ptr uint64; m
 
 proc export_draw_image(runtime: PRuntime; ctx: PImportContext; sp: ptr uint64; mem: pointer): pointer {.cdecl.} =
   var sp = sp.stackPtrToUint()
-  proc procImpl(targetID: uint32, sourceID:uint32, x: int32, y: int32) =
-    discard
+  proc procImpl(targetID: uint32, sourceID:uint32, positionX: int32, positionY: int32) =
+    null0_images[targetID].image.draw(null0_images[sourceID].image, translate(vec2(float32 positionX, float32 positionY)))
   callHost(procImpl, sp, mem)
 
 proc export_dimensions(runtime: PRuntime; ctx: PImportContext; sp: ptr uint64; mem: pointer): pointer {.cdecl.} =
@@ -85,6 +85,7 @@ proc null0_setup_imports(module: PModule, debug: bool = false) =
     if debug:
       echo "import load_image: ", e.msg
   try:
+    # draw_image(targetID, sourceID, positionX, positionY)
     checkWasmRes m3_LinkRawFunction(module, "*", "draw_image", "v(iiii)", export_draw_image)
   except WasmError as e:
     if debug:

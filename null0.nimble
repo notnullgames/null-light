@@ -16,7 +16,9 @@ requires "pixie >= 5.0.6"
 requires "https://github.com/beef331/wasm3 >= 0.1.10"
 
 requires "docopt >= 0.7.0"
-requires "sdl2"
+requires "boxy >= 0.4.1"
+requires "windy >= 0.0.0"
+requires "opengl >= 1.2.7"
 
 import std/os
 import std/strutils

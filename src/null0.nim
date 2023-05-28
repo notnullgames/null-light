@@ -1,7 +1,10 @@
 # this is the CLI runtime
 
 import docopt
-import sdl2
+import boxy
+import opengl
+import windy
+
 import ./api
 
 let doc = """
@@ -19,6 +22,21 @@ Options:
   --debug            Enable extra debugging output
 """
 
+proc heartTest(image: Image) =
+  image.fillPath(
+    """
+      M 20 60
+      A 40 40 90 0 1 100 60
+      A 40 40 90 0 1 180 60
+      Q 180 120 100 180
+      Q 20 120 20 60
+      z
+    """,
+    parseHtmlColor("#FC427B").rgba,
+    translate(vec2(60, 20))
+  )
+
+
 let args = docopt(doc, version = "null0 0.0.0")
 
 if args["--debug"]:
@@ -31,30 +49,52 @@ if args["watch"]:
   echo "watch is not implemented, yet."
 
 if args["<cart>"]:
+  var frame: int
+  let windowSize = ivec2(320, 240)
+  let window = newWindow("null0", windowSize)
+  makeContextCurrent(window)
+  loadExtensions()
+  let bxy = newBoxy()
+
   null0_load($args["<cart>"], args["--debug"])
-  let screenSize = rect(0, 0, 320, 240)
-  discard sdl2.init(INIT_EVERYTHING)
-  let window = createWindow("null0", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, screenSize.w, screenSize.h, SDL_WINDOW_SHOWN)
-  let render = createRenderer(window, -1, Renderer_Accelerated or Renderer_PresentVsync or Renderer_TargetTexture)
-  let gameSurface = createRGBSurfaceFrom(cast[pointer](addr null0_images[0].image.data), cint screenSize.w, cint screenSize.h, cint 8, cint screenSize.w, uint32 0, uint32 0, uint32 0, uint32 0)
-  let windwSurface = window.getSurface()
 
-  var evt = sdl2.defaultEvent
-  var runGame = true
+  let ratio = windowSize.x / windowSize.y
+  var scale = 1.0
+  var offset = vec2(0, 0)
+  var fX:float
+  var fY:float
 
-  while runGame:
-    while pollEvent(evt):
-      if evt.kind == QuitEvent:
-        runGame = false
-        break
-    render.setDrawColor(0, 0, 0, 255)
-    render.clear()
-    blitSurface(gameSurface, unsafeAddr screenSize, windwSurface, unsafeAddr screenSize)
-    discard updateSurface(window)
-    render.present()
+  window.onFrame = proc() =
+    frame.inc()
+
+    # adjust scale/offset to fill the window nicely
+    fX = float(window.size.x)
+    fY = float(window.size.y)
+    if float(window.size.x) > (fY * ratio):
+      scale = window.size.y / windowSize.y
+      offset.x = (fX - (float(windowSize.x) * scale)) / 2
+      offset.y = 0
+    else:
+      scale = window.size.x / windowSize.x
+      offset.y = (fY - (float(windowSize.y) * scale)) / 2
+      offset.x = 0
+
+    null0_update()
+
+    # This is maybe too inneficient, but I need to make a new image for every frame
+    bxy.addImage($frame, null0_images[0].image)
+
+    bxy.beginFrame(window.size)
+    bxy.saveTransform()
+    bxy.translate(offset)
+    bxy.scale(scale)
+    bxy.drawImage($frame, vec2(0, 0))
+    bxy.restoreTransform()
+    bxy.endFrame()
+    window.swapBuffers()
+
+  while not window.closeRequested:
+    pollEvents()
+
   null0_unload()
-  freeSurface(gameSurface)
-  freeSurface(windwSurface)
-  destroy render
-  destroy window
   

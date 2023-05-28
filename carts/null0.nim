@@ -127,7 +127,7 @@ proc trace*(text: cstring) {.importc, cdecl.}
 proc load_image*(filename: cstring): Image {.importc, cdecl.}
 
 # Draw an image on another image
-proc draw_image*(targetID: Image, sourceID:Image, x: int32, y: int32) {.importc, cdecl.}
+proc draw_image*(targetID: Image, sourceID:Image, position: Vector2) {.importc, cdecl.}
 
 # Get height/width of an image/canvas
 proc dimensions*(sourceID: Image): Vector2 {.importc, cdecl.}
@@ -138,13 +138,13 @@ proc dimensions*(sourceID: Image): Vector2 {.importc, cdecl.}
 proc load_image*(filename: string): Image =
   return load_image(cstring filename)
 
-proc draw_image*(targetID: Image, sourceID:Image, x: int, y: int) =
-  draw_image(targetID, sourceID, int32 x, int32 y)
+proc draw_image*(targetID: Image, sourceID:Image, position: Vector2) =
+  draw_image(targetID, sourceID, position)
 
-proc draw_image*(sourceID: Image, x: int, y: int) =
-  draw_image(screen, sourceID, x, y)
+proc draw_image*(sourceID: Image, position: Vector2) =
+  draw_image(screen, sourceID, position)
 
-proc draw*(sourceID: Image, x: int, y: int) =
-  draw_image(screen, sourceID, x, y)
+proc draw*(sourceID: Image, position: Vector2) =
+  draw_image(screen, sourceID, position)
 
 
