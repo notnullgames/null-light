@@ -4,6 +4,8 @@ A fun and easy cross-language game-engine.
 
 The idea is a cross-language, cross-platform game-engine for making nice 2D games. Fast, fun, and easy! You write your game in whatever language you like, and it will run (with no recompile) on any platform, including the web and low-end devices.
 
+![draw_shapes](./screesnhots/draw_shapes.png)
+
 ## Get Started
 
 Install the [release](https://github.com/notnullgames/null0/releases) for your platform, and run:
@@ -24,6 +26,29 @@ This is for a nim-based game, and you will need nim installed. There will also b
 
 Eventually there will be lots more options for different languages and targets, and more options with null0 CLI to make it even easier to get started.
 
+## Cart Layout
+
+Carts (.null0) are just zip files. They have this layout:
+
+```
+├── game.json
+├── icon.png
+└── main.wasm
+```
+
+The `icon.png` and `game.json` are optional, but it will be used on the (eventual) community site:
+
+```json
+{
+  "name": "Draw Image",
+  "description": "Demo that animates an image moving down",
+  "language": "nim",
+  "tags": ["demo", "drawing", "images"],
+  "author": "David Konsumer <@konsumer>"
+}
+```
+
+Any file in the cart can be read by your code.
 
 ## Thanks
 

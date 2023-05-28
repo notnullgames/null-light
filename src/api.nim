@@ -86,7 +86,7 @@ proc null0_load*(filename: string, debug: bool = false) =
       null0_images[targetID].strokeStyle = rgba(borderColor)
 
   wasm_import(dimensions, "v(ii)"):
-    proc (retPointer: uint32, sourceID: uint32): WasmVector2 =
+    proc (retPointer: uint32, sourceID: uint32) =
       let v = WasmVector2(x: int32(null0_images[sourceID].image.width), y: int32(null0_images[sourceID].image.height))
       cast[ptr WasmVector2](cast[uint64](mem) + retPointer)[] = v
 
@@ -129,6 +129,7 @@ proc null0_load*(filename: string, debug: bool = false) =
       if borderSize != 0:
         null0_images[targetID].strokeRoundedRect(shape, float32 nw, float32 ne, float32 se, float32 sw)
 
+  # (targetID: Image, position:Vector2, dimensions:Vector2, borderSize:uint32 = 0)
   wasm_import(ellipse, "v(i**i)"):
     proc (targetID: uint32, position:WasmVector2, dimensions:WasmVector2, borderSize:uint32) =
       null0_images[targetID].lineWidth = float32 borderSize

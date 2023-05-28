@@ -11,10 +11,11 @@ load:
   offset.x = int32(screenSize.x / 2) - int32(logoSize.x / 2)
 
 update:
-  # gameTime is the current seconds the engine has been running, as a float32
+  # gameTime is exposed here. It's the current seconds the engine has been running, as a float32.
+  # You can use this to make animations
   var frameTime = int (gameTime * 100)
   offset.y = int32(frameTime mod (screenSize.y + logoSize.y)) - logoSize.y
-  clear()
+  clear(BLACK)
   logo.draw(offset)
 
 unload:

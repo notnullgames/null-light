@@ -1,5 +1,7 @@
 {
   "name": "Draw Image",
   "description": "Demo that animates an image moving down",
-  "language": "nim"
+  "language": "nim",
+  "tags": ["demo", "drawing", "images"],
+  "author": "David Konsumer <@konsumer>"
 }
