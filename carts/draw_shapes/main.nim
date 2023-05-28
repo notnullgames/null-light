@@ -1,6 +1,6 @@
 load:
   trace("Hello from draw_shapes")
-  # usually you would draw in update(), but you can do it here, too
+  # usually you would draw in update(), but you can do it here, too, if nothing changes
   clear(SKYBLUE)
 
   # face

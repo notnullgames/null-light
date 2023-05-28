@@ -32,10 +32,19 @@ import std/strformat
 task clean, "Cleans up files":
   exec "rm -f null0 *.wasm *.null0 tests/test_api"
 
-# TODO: lookup cart-type from game.json (this can only build nim, but other types could be triggered)
+# TODO: lookup cart-type from game.json (this can only build nim, but other builds could be triggered)
 # TODO: use zippy to build the cart
 
 task cart, "Build a demo cart":
   let name = paramStr(paramCount())
   let dir = "carts/" & name
   exec(fmt"cd {dir} && nim c main.nim && zip ../../{name}.null0 -r * -x '*.DS_Store' -x '*.nim' && mv main.wasm ../../{name}.wasm")
+
+task cart_run, "Build and run a demo cart":
+  let name = paramStr(paramCount())
+  let dir = "carts/" & name
+  exec(fmt"cd {dir} && nim c main.nim && zip ../../{name}.null0 -r * -x '*.DS_Store' -x '*.nim' && mv main.wasm ../../{name}.wasm")
+  exec(fmt"nimble run -- --debug {name}.null0")
+
+task release, "Build a ddownload package for a release":
+  discard

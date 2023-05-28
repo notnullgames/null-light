@@ -88,24 +88,29 @@ proc null0_load*(filename: string, debug: bool = false) =
 
   if debug:
     if dirExists(filename):
-      echo fmt"{filename} is a directory."
       null0_dir = filename
       wasmBytes = null0_readfile("main.wasm")
     elif fileExists(filename):
       let b = readFile(filename)
       if isZip(b):
-        echo fmt"{filename} is a zip file."
         null0_files = openZipArchive(filename)
         wasmBytes = null0_readfile("main.wasm")
       elif isWasm(b):
-        echo fmt"{filename} is a wasm file."
         wasmBytes = b
         null0_dir = parentDir(filename)
       else:
         echo fmt"{filename} is a file, but it's invalid."
+        quit(1)
     else:
       echo fmt"{filename} does not exist."
       quit(1)
+
+  if not isWasm(wasmBytes):
+    echo "Your main.wasm is not vaild."
+    quit(1)
+
+  if debug:
+    echo fmt"{filename} has a valid main.wasm."
   
   var env = m3_NewEnvironment()
   var runtime = env.m3_NewRuntime(uint32 uint16.high, nil)
@@ -214,5 +219,5 @@ proc null0_unload*() =
 proc null0_update*() =
   ## Update the model of the game
   if null0_export_update != nil:
-    null0_export_update.call(void, float32 cpuTime() - null0_time_start)
+    null0_export_update.call(void, float32(cpuTime() - null0_time_start))
 

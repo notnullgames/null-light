@@ -13,7 +13,10 @@ A fun and easy cross-language game-engine.
 Usage:
   null0 new <name> [--lang=<language>]
   null0 watch [--debug] <cart>
+  null0 build <cart>
   null0 [--debug] [--screenshot=<screenshot>] <cart>
+
+<cart> can be a directory, raw wasm-file, or a zip-file (.nulll0)
 
 Options:
   -h, --help                Show this screen.
@@ -45,11 +48,22 @@ if args["--debug"]:
 
 if args["new"]:
   echo "new is not implemented, yet."
+  # TODO: clone template repo for lang
   quit(1)
 
 if args["watch"]:
   echo "watch is not implemented, yet."
+  # TODO: check path for tools to compile cart (for lang)
+  # TODO: build initial cart
+  # TODO: start watcher to rebuild & reload on chnage
   quit(1)
+
+if args["build"]:
+  echo "build is not implemented, yet."
+  # TODO: check path for tools to compile cart (for lang)
+  # TODO: build cart
+  quit(1)
+
 
 if args["<cart>"]:
   null0_load($args["<cart>"], args["--debug"])

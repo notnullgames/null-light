@@ -1,5 +1,6 @@
 .DS_Store
 /*.null0
 /*.wasm
+/*.zip
 /null0
 /nimbledeps
