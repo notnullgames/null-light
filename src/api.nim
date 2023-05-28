@@ -1,8 +1,18 @@
-import zippy/ziparchives
+import std/os
+import std/strformat
+import std/times
 import pixie
 import wasm3
 import wasm3/wasm3c
-import std/times
+import zippy/ziparchives
+
+proc isZip*(bytes: string): bool =
+  ## detect if some bytes (at least 4) are a zip file
+  return ord(bytes[0]) == 0x50 and ord(bytes[1]) == 0x4B and ord(bytes[2]) == 0x03 and ord(bytes[3]) == 0x04
+
+proc isWasm*(bytes: string): bool =
+  ## detect if some bytes (at least 4) are a wasm file
+  return ord(bytes[0]) == 0x00 and ord(bytes[1]) == 0x61 and ord(bytes[2]) == 0x73 and ord(bytes[3]) == 0x6d
 
 # wrap an import (for wasm)
 # TODO: can I generate sig?
@@ -57,16 +67,45 @@ var null0_export_unload:PFunction
 var null0_export_buttonDown:PFunction
 var null0_export_buttonUp:PFunction
 
+var null0_dir:string 
 
-# TODO: currently this only loads zip, support dir & bare wasm
+# wrapped function to read a file from cart/dir
+proc null0_readfile(filename: string): string =
+  if null0_files != nil:
+    return null0_files.extractFile(filename)
+  else:
+    # TODO: this is not really secure (no sandboxing.) dirs are for dev/debugging so maybe that is OK
+    return readFile(fmt"{null0_dir}/{filename}")
+
 proc null0_load*(filename: string, debug: bool = false) =
+  ## Starts the null0 engine on a cart (which can be a wasm/zip file or a directory)
   null0_time_start = cpuTime()
 
   # image 0 is "screen"
   null0_images.add(newContext(320, 240))
-  
-  null0_files = openZipArchive(filename)
-  let wasmBytes = null0_files.extractFile("main.wasm")
+
+  var wasmBytes: string
+
+  if debug:
+    if dirExists(filename):
+      echo fmt"{filename} is a directory."
+      null0_dir = filename
+      wasmBytes = null0_readfile("main.wasm")
+    elif fileExists(filename):
+      let b = readFile(filename)
+      if isZip(b):
+        echo fmt"{filename} is a zip file."
+        null0_files = openZipArchive(filename)
+        wasmBytes = null0_readfile("main.wasm")
+      elif isWasm(b):
+        echo fmt"{filename} is a wasm file."
+        wasmBytes = b
+        null0_dir = parentDir(filename)
+      else:
+        echo fmt"{filename} is a file, but it's invalid."
+    else:
+      echo fmt"{filename} does not exist."
+      quit(1)
   
   var env = m3_NewEnvironment()
   var runtime = env.m3_NewRuntime(uint32 uint16.high, nil)
@@ -97,7 +136,7 @@ proc null0_load*(filename: string, debug: bool = false) =
   wasm_import(load_image, "i(*)"):
     proc (filename: cstring): uint32 =
       let i = len(null0_images)
-      null0_images.add(newContext(decodeImage(null0_files.extractFile($filename))))
+      null0_images.add(newContext(decodeImage(null0_readfile($filename))))
       return uint32 i
 
   wasm_import(new_image, "i(*)"):
@@ -141,27 +180,27 @@ proc null0_load*(filename: string, debug: bool = false) =
     checkWasmRes m3_FindFunction(addr null0_export_load, runtime, "load")
   except WasmError as e:
     if debug:
-      echo "export load: ", e.msg
+      echo fmt"export load: {e.msg}"
   try:
     checkWasmRes m3_FindFunction(addr null0_export_unload, runtime, "unload")
   except WasmError as e:
     if debug:
-      echo "export unload: ", e.msg
+      echo fmt"export unload: {e.msg}"
   try:
     checkWasmRes m3_FindFunction(addr null0_export_update, runtime, "update")
   except WasmError as e:
     if debug:
-      echo "export update: ", e.msg
+      echo fmt"export update: {e.msg}"
   try:
     checkWasmRes m3_FindFunction(addr null0_export_buttonUp, runtime, "buttonUp")
   except WasmError as e:
     if debug:
-      echo "export buttonUp: ", e.msg
+      echo fmt"export buttonUp: {e.msg}"
   try:
     checkWasmRes m3_FindFunction(addr null0_export_buttonDown, runtime, "buttonDown")
   except WasmError as e:
     if debug:
-      echo "export buttonDown: ", e.msg
+      echo fmt"export buttonDown: {e.msg}"
 
   if null0_export_load != nil:
     null0_export_load.call(void)
