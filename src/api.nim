@@ -4,6 +4,19 @@ import wasm3
 import wasm3/wasm3c
 import std/times
 
+# wrap an import (for wasm)
+# TODO: can I generate sig?
+template wasm_import*(name: untyped, sig: string, body: untyped):untyped {.dirty.} =
+  let name = proc (runtime: PRuntime; ctx: PImportContext; sp: ptr uint64; mem: pointer): pointer {.cdecl.} =
+    let wrapper = body
+    var s = sp.stackPtrToUint()
+    callHost(wrapper, s, mem)
+  try:
+    checkWasmRes m3_LinkRawFunction(module, "*", name.astToStr, sig, name)
+  except WasmError as e:
+    if debug:
+      echo "import ", name.astToStr, ": ", e.msg
+
 # This is how data is passed over the wasm-barrier
 type
   WasmVector2 {.packed.} = object
@@ -44,109 +57,6 @@ var null0_export_unload:PFunction
 var null0_export_buttonDown:PFunction
 var null0_export_buttonUp:PFunction
 
-# TODO: these would be simpler in a macro
-
-proc export_trace(runtime: PRuntime; ctx: PImportContext; sp: ptr uint64; mem: pointer): pointer {.cdecl.} =
-  var sp = sp.stackPtrToUint()
-  proc procImpl(text: cstring) =
-    echo text
-  callHost(procImpl, sp, mem)
-
-proc export_load_image(runtime: PRuntime; ctx: PImportContext; sp: ptr uint64; mem: pointer): pointer {.cdecl.} =
-  var sp = sp.stackPtrToUint()
-  proc procImpl(filename: cstring): uint32 =
-    let i = len(null0_images)
-    null0_images.add(newContext(decodeImage(null0_files.extractFile($filename))))
-    return uint32 i
-  callHost(procImpl, sp, mem)
-
-proc export_draw_image(runtime: PRuntime; ctx: PImportContext; sp: ptr uint64; mem: pointer): pointer {.cdecl.} =
-  var sp = sp.stackPtrToUint()
-  proc procImpl(targetID: uint32, sourceID:uint32, position:WasmVector2) =
-    null0_images[targetID].image.draw(null0_images[sourceID].image, translate(vec2(position)))
-  callHost(procImpl, sp, mem)
-
-proc export_dimensions(runtime: PRuntime; ctx: PImportContext; sp: ptr uint64; mem: pointer): pointer {.cdecl.} =
-  var sp = sp.stackPtrToUint()
-  proc procImpl(retPointer: uint32, sourceID: uint32) =
-    let v = WasmVector2(x: int32(null0_images[sourceID].image.width), y: int32(null0_images[sourceID].image.height))
-    cast[ptr WasmVector2](cast[uint64](mem) + retPointer)[] = v
-  callHost(procImpl, sp, mem)
-
-proc export_rect_filled(runtime: PRuntime; ctx: PImportContext; sp: ptr uint64; mem: pointer): pointer {.cdecl.} =
-  var sp = sp.stackPtrToUint()
-  proc procImpl(targetID: uint32, position:WasmVector2, dimensions:WasmVector2) =
-    null0_images[targetID].fillRect(rect(vec2(position), vec2(dimensions)))
-  callHost(procImpl, sp, mem)
-
-proc export_fill_color(runtime: PRuntime; ctx: PImportContext; sp: ptr uint64; mem: pointer): pointer {.cdecl.} =
-  var sp = sp.stackPtrToUint()
-  proc procImpl(targetID: uint32, color: WasmColor) =
-    null0_images[targetID].fillStyle = rgba(color)
-  callHost(procImpl, sp, mem)
-
-proc null0_setup_imports(module: PModule, debug: bool = false) =
-  try:
-    checkWasmRes m3_LinkRawFunction(module, "*", "trace", "v(*)", export_trace)
-  except WasmError as e:
-    if debug:
-      echo "import trace: ", e.msg
-  try:
-    checkWasmRes m3_LinkRawFunction(module, "*", "load_image", "i(*)", export_load_image)
-  except WasmError as e:
-    if debug:
-      echo "import load_image: ", e.msg
-  try:
-    checkWasmRes m3_LinkRawFunction(module, "*", "draw_image", "v(ii*)", export_draw_image)
-  except WasmError as e:
-    if debug:
-      echo "import draw_image: ", e.msg
-  try:
-    # dimension(returnPtr, image)
-    checkWasmRes m3_LinkRawFunction(module, "*", "dimensions", "v(ii)", export_dimensions)
-  except WasmError as e:
-    if debug:
-      echo "import dimensions: ", e.msg
-  try:
-    checkWasmRes m3_LinkRawFunction(module, "*", "rect_filled", "v(i**)", export_rect_filled)
-  except WasmError as e:
-    if debug:
-      echo "import rect_filled: ", e.msg
-  try:
-    checkWasmRes m3_LinkRawFunction(module, "*", "fill_color", "v(i*)", export_fill_color)
-  except WasmError as e:
-    if debug:
-      echo "import fill_color: ", e.msg
-
-
-  
-
-proc null0_setup_exports(runtime: PRuntime, debug:bool = false) =
-  try:
-    checkWasmRes m3_FindFunction(null0_export_update.addr, runtime, "update")
-  except WasmError as e:
-    if debug:
-      echo "export update: ", e.msg
-  try:
-    checkWasmRes m3_FindFunction(null0_export_unload.addr, runtime, "unload")
-  except WasmError as e:
-    if debug:
-      echo "export unload: ", e.msg
-  try:
-    checkWasmRes m3_FindFunction(null0_export_load.addr, runtime, "load")
-  except WasmError as e:
-    if debug:
-      echo "export load: ", e.msg
-  try:
-    checkWasmRes m3_FindFunction(null0_export_buttonDown.addr, runtime, "buttonDown")
-  except WasmError as e:
-    if debug:
-      echo "export buttonDown: ", e.msg
-  try:
-    checkWasmRes m3_FindFunction(null0_export_buttonUp.addr, runtime, "buttonUp")
-  except WasmError as e:
-    if debug:
-      echo "export buttonUp: ", e.msg
 
 # TODO: currently this only loads zip, support dir & bare wasm
 proc null0_load*(filename: string, debug: bool = false) =
@@ -163,8 +73,79 @@ proc null0_load*(filename: string, debug: bool = false) =
   var module: PModule
   checkWasmRes m3_ParseModule(env, module.addr, cast[ptr uint8](unsafeAddr wasmBytes[0]), uint32 len(wasmBytes))
   checkWasmRes m3_LoadModule(runtime, module)
-  null0_setup_imports(module, debug)
-  null0_setup_exports(runtime, debug)
+
+  # must create imports before getting exports
+
+  wasm_import(trace, "v(*)"):
+    proc (text: cstring) =
+      echo text
+
+  wasm_import(set_color, "v(i**)"):
+    proc (targetID: uint32, fillColor: WasmColor, borderColor: WasmColor) =
+      null0_images[targetID].fillStyle = rgba(fillColor)
+      null0_images[targetID].strokeStyle = rgba(borderColor)
+
+  wasm_import(dimensions, "v(ii)"):
+    proc (retPointer: uint32, sourceID: uint32): WasmVector2 =
+      let v = WasmVector2(x: int32(null0_images[sourceID].image.width), y: int32(null0_images[sourceID].image.height))
+      cast[ptr WasmVector2](cast[uint64](mem) + retPointer)[] = v
+
+  wasm_import(draw_image, "v(ii*)"):
+    proc (targetID: uint32, sourceID:uint32, position: WasmVector2) =
+      null0_images[targetID].image.draw(null0_images[sourceID].image, translate(vec2(position)))
+
+  wasm_import(load_image, "i(*)"):
+    proc (filename: cstring): uint32 =
+      let i = len(null0_images)
+      null0_images.add(newContext(decodeImage(null0_files.extractFile($filename))))
+      return uint32 i
+
+  wasm_import(new_image, "i(*)"):
+    proc (dimensions: WasmVector2):uint32 =
+      null0_images.add(newContext(dimensions.x, dimensions.y))
+      return uint32 len(null0_images) - 1
+
+  wasm_import(rectangle, "v(i**i)"):
+    proc (targetID: uint32, position:WasmVector2, dimensions:WasmVector2, borderSize:uint32) =
+      null0_images[targetID].lineWidth = float32 borderSize
+      let shape = rect(vec2(position), vec2(dimensions))
+      null0_images[targetID].fillRect(shape)
+      if borderSIze != 0:
+        null0_images[targetID].strokeRect(shape)
+
+  wasm_import(circle, "v(i*ii)"):
+    proc (targetID: uint32, position:WasmVector2, radius: uint32, borderSize:uint32) =
+      null0_images[targetID].lineWidth = float32 borderSize
+      let shape = circle(vec2(position), float32 radius)
+      null0_images[targetID].fillCircle(shape)
+      if borderSIze != 0:
+        null0_images[targetID].strokeCircle(shape)
+
+  try:
+    checkWasmRes m3_FindFunction(addr null0_export_load, runtime, "load")
+  except WasmError as e:
+    if debug:
+      echo "export load: ", e.msg
+  try:
+    checkWasmRes m3_FindFunction(addr null0_export_unload, runtime, "unload")
+  except WasmError as e:
+    if debug:
+      echo "export unload: ", e.msg
+  try:
+    checkWasmRes m3_FindFunction(addr null0_export_update, runtime, "update")
+  except WasmError as e:
+    if debug:
+      echo "export update: ", e.msg
+  try:
+    checkWasmRes m3_FindFunction(addr null0_export_buttonUp, runtime, "buttonUp")
+  except WasmError as e:
+    if debug:
+      echo "export buttonUp: ", e.msg
+  try:
+    checkWasmRes m3_FindFunction(addr null0_export_buttonDown, runtime, "buttonDown")
+  except WasmError as e:
+    if debug:
+      echo "export buttonDown: ", e.msg
 
   if null0_export_load != nil:
     null0_export_load.call(void)

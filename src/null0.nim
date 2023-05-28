@@ -66,6 +66,7 @@ if args["<cart>"]:
 
   window.onFrame = proc() =
     frame.inc()
+    null0_update()
 
     # adjust scale/offset to fill the window nicely
     fX = float(window.size.x)
@@ -78,18 +79,16 @@ if args["<cart>"]:
       scale = window.size.x / windowSize.x
       offset.y = (fY - (float(windowSize.y) * scale)) / 2
       offset.x = 0
-
-    null0_update()
     
-    # TODO: this is inefficient - it re-adds the screen-image every frame
+    # XXX: this is clearing all the tiles every frame.
     bxy.clearAtlas()
-    bxy.addImage("screen", null0_images[0].image)
+    bxy.addImage("screen" & $frame, null0_images[0].image)
 
     bxy.beginFrame(window.size)
     bxy.saveTransform()
     bxy.translate(offset)
     bxy.scale(scale)
-    bxy.drawImage("screen", vec2(0, 0))
+    bxy.drawImage("screen" & $frame, vec2(0, 0))
     bxy.restoreTransform()
     bxy.endFrame()
     window.swapBuffers()

@@ -1,0 +1,5 @@
+{
+  "name": "Draw Shapes",
+  "description": "Demo that draws with shape-primitives",
+  "language": "nim"
+}

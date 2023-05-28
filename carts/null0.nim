@@ -123,20 +123,26 @@ proc `/`*(a:Vector2, b: int32): Vector2 =
 # Similar to echo, but simpler, and works cross-host
 proc trace*(text: cstring) {.importc, cdecl.}
 
-# Load an image/canvas return ID
+# Create a new image
+proc new_image*(dimensions: Vector2):Image {.importc, cdecl.}
+
+# Load an image return ID
 proc load_image*(filename: cstring): Image {.importc, cdecl.}
 
 # Draw an image on another image
 proc draw_image*(targetID: Image, sourceID:Image, position: Vector2) {.importc, cdecl.}
 
-# Get height/width of an image/canvas
+# Get height/width of an image
 proc dimensions*(sourceID: Image): Vector2 {.importc, cdecl.}
 
-# Draw a filled-rectangle on image/canvas
-proc rect_filled*(targetID: Image, position:Vector2, dimensions:Vector2) {.importc, cdecl.}
+# Draw a rectangle on image
+proc rectangle*(targetID: Image, position:Vector2, dimensions:Vector2, borderSize:uint32 = 0) {.importc, cdecl.}
 
-# Set current fill-color on image/canvas
-proc fill_color*(targetID: Image, color: Color) {.importc, cdecl.}
+# Draw a rectangle on image
+proc circle*(targetID: Image, position:Vector2, radius: uint32, borderSize:uint32 = 0) {.importc, cdecl.}
+
+# Set current fill/border color on image
+proc set_color*(targetID: Image, fillColor: Color = BLACK, borderColor: Color = BLANK) {.importc, cdecl.}
 
 ### Wrappers
 
@@ -152,15 +158,18 @@ proc draw_image*(sourceID: Image, position: Vector2) =
 proc draw*(sourceID: Image, position: Vector2) =
   draw_image(screen, sourceID, position)
 
-proc rect_filled*(position:Vector2, dimensions:Vector2) =
-  rect_filled(screen, position, dimensions)
-
-proc fill_color*(color: Color) =
-  fill_color(screen, color)
-
 proc clear*(targetID: Image, color: Color = BLACK) =
-  fill_color(targetID, color)
-  rect_filled(targetID, vec2(0, 0), vec2(320, 240))
+  set_color(targetID, color)
+  rectangle(targetID, vec2(0, 0), vec2(320, 240), 0)
 
 proc clear*(color: Color = BLACK) =
   clear(screen, color)
+
+proc rectangle*(position:Vector2, dimensions:Vector2, borderSize:uint32 = 0) =
+  rectangle(screen, position, dimensions, borderSize)
+
+proc circle*(position:Vector2, radius: uint32, borderSize:uint32 = 0) =
+  circle(screen, position, radius, borderSize)
+
+proc set_color*(fillColor: Color = BLACK, borderColor: Color = BLANK) =
+  set_color(screen, fillColor, borderColor)

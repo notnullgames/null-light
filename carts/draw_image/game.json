@@ -1,5 +1,5 @@
 {
   "name": "Draw Image",
-  "description": "Demo cart that loads an image and draws it",
+  "description": "Demo that animates an image moving down",
   "language": "nim"
 }
