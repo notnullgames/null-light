@@ -138,8 +138,14 @@ proc dimensions*(sourceID: Image): Vector2 {.importc, cdecl.}
 # Draw a rectangle on image
 proc rectangle*(targetID: Image, position:Vector2, dimensions:Vector2, borderSize:uint32 = 0) {.importc, cdecl.}
 
+# Draw a rounded rectangle on image
+proc rectangle_round(targetID: Image, position:Vector2, dimensions:Vector2, nw: uint32, ne: uint32, se: uint32, sw: uint32, borderSize:uint32 = 0) {.importc, cdecl.}
+
 # Draw a rectangle on image
 proc circle*(targetID: Image, position:Vector2, radius: uint32, borderSize:uint32 = 0) {.importc, cdecl.}
+
+# Draw an ellipse on image
+proc ellipse*(targetID: Image, position:Vector2, dimensions:Vector2, borderSize:uint32 = 0) {.importc, cdecl.}
 
 # Set current fill/border color on image
 proc set_color*(targetID: Image, fillColor: Color = BLACK, borderColor: Color = BLANK) {.importc, cdecl.}
@@ -168,8 +174,20 @@ proc clear*(color: Color = BLACK) =
 proc rectangle*(position:Vector2, dimensions:Vector2, borderSize:uint32 = 0) =
   rectangle(screen, position, dimensions, borderSize)
 
+proc rectangle_round*(position:Vector2, dimensions:Vector2, nw: uint32, ne: uint32, se: uint32, sw: uint32, borderSize:uint32 = 0) =
+  rectangle_round(screen, position, dimensions, nw, nw, se, sw, borderSize)
+
+proc rectangle_round*(targetID: Image, position:Vector2, dimensions:Vector2, amount: uint32, borderSize:uint32 = 0) =
+  rectangle_round(targetID, position, dimensions, amount, amount, amount, amount, borderSize)
+
+proc rectangle_round*(position:Vector2, dimensions:Vector2, amount: uint32, borderSize:uint32 = 0) =
+  rectangle_round(screen, position, dimensions, amount, amount, amount, amount, borderSize)
+
 proc circle*(position:Vector2, radius: uint32, borderSize:uint32 = 0) =
   circle(screen, position, radius, borderSize)
+
+proc ellipse*(position:Vector2, dimensions:Vector2, borderSize:uint32 = 0) =
+  ellipse(screen, position, dimensions, borderSize = 0)
 
 proc set_color*(fillColor: Color = BLACK, borderColor: Color = BLANK) =
   set_color(screen, fillColor, borderColor)

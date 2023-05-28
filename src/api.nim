@@ -110,7 +110,7 @@ proc null0_load*(filename: string, debug: bool = false) =
       null0_images[targetID].lineWidth = float32 borderSize
       let shape = rect(vec2(position), vec2(dimensions))
       null0_images[targetID].fillRect(shape)
-      if borderSIze != 0:
+      if borderSize != 0:
         null0_images[targetID].strokeRect(shape)
 
   wasm_import(circle, "v(i*ii)"):
@@ -118,8 +118,23 @@ proc null0_load*(filename: string, debug: bool = false) =
       null0_images[targetID].lineWidth = float32 borderSize
       let shape = circle(vec2(position), float32 radius)
       null0_images[targetID].fillCircle(shape)
-      if borderSIze != 0:
+      if borderSize != 0:
         null0_images[targetID].strokeCircle(shape)
+
+  wasm_import(rectangle_round, "v(i**iiiii)"):
+    proc (targetID: uint32, position:WasmVector2, dimensions:WasmVector2, nw: uint32, ne: uint32, se: uint32, sw: uint32, borderSize:uint32) =
+      null0_images[targetID].lineWidth = float32 borderSize
+      let shape = rect(vec2(position), vec2(dimensions))
+      null0_images[targetID].fillRoundedRect(shape, float32 nw, float32 ne, float32 se, float32 sw)
+      if borderSize != 0:
+        null0_images[targetID].strokeRoundedRect(shape, float32 nw, float32 ne, float32 se, float32 sw)
+
+  wasm_import(ellipse, "v(i**i)"):
+    proc (targetID: uint32, position:WasmVector2, dimensions:WasmVector2, borderSize:uint32) =
+      null0_images[targetID].lineWidth = float32 borderSize
+      null0_images[targetID].fillEllipse(vec2(position), float32 dimensions.x, float32 dimensions.y)
+      if borderSize != 0:
+        null0_images[targetID].strokeEllipse(vec2(position), float32 dimensions.x, float32 dimensions.y)
 
   try:
     checkWasmRes m3_FindFunction(addr null0_export_load, runtime, "load")
