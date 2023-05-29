@@ -6,7 +6,7 @@ load:
   # face
   set_color(YELLOW, BLACK)
   circle(vec2(160, 120), 100, 5)
-  
+
   # eyes & mouth
   set_color(BLACK)
   circle(vec2(120, 80), 20)

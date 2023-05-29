@@ -1,18 +1,18 @@
---os:linux
---cpu:wasm32
---cc:clang
+--os: linux
+--cpu: wasm32
+--cc: clang
 --listCmd
---mm:orc
---exceptions:goto
---define:noSignalHandler
---noMain:on
---threads:off
---define:release
+--mm: orc
+--exceptions: goto
+--define: noSignalHandler
+--noMain: on
+--threads: off
+--define: release
 
---clang.exe:emcc
---clang.linkerexe:emcc
---clang.cpp.exe:emcc
---clang.cpp.linkerexe:emcc
+--clang.exe: emcc
+--clang.linkerexe: emcc
+--clang.cpp.exe: emcc
+--clang.cpp.linkerexe: emcc
 
 switch("import", "./null0")
 

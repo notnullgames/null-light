@@ -80,12 +80,12 @@ if args["<cart>"]:
   makeContextCurrent(window)
   loadExtensions()
   let bxy = newBoxy()
-  
+
   let ratio = windowSize.x / windowSize.y
   var scale = 1.0
   var offset = vec2(0, 0)
-  var fX:float
-  var fY:float
+  var fX: float
+  var fY: float
 
   window.onFrame = proc() =
     frame.inc()
@@ -102,7 +102,7 @@ if args["<cart>"]:
       scale = window.size.x / windowSize.x
       offset.y = (fY - (float(windowSize.y) * scale)) / 2
       offset.x = 0
-    
+
     # TODO: this is clearing all the tiles every frame, which is very inefficient.
     bxy.clearAtlas()
     bxy.addImage("screen" & $frame, null0_images[0].image)
@@ -120,4 +120,4 @@ if args["<cart>"]:
     pollEvents()
 
   null0_unload()
-  
+

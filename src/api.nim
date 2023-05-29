@@ -8,16 +8,20 @@ import zippy/ziparchives
 
 proc isZip*(bytes: string): bool =
   ## detect if some bytes (at least 4) are a zip file
-  return ord(bytes[0]) == 0x50 and ord(bytes[1]) == 0x4B and ord(bytes[2]) == 0x03 and ord(bytes[3]) == 0x04
+  return ord(bytes[0]) == 0x50 and ord(bytes[1]) == 0x4B and ord(bytes[2]) ==
+      0x03 and ord(bytes[3]) == 0x04
 
 proc isWasm*(bytes: string): bool =
   ## detect if some bytes (at least 4) are a wasm file
-  return ord(bytes[0]) == 0x00 and ord(bytes[1]) == 0x61 and ord(bytes[2]) == 0x73 and ord(bytes[3]) == 0x6d
+  return ord(bytes[0]) == 0x00 and ord(bytes[1]) == 0x61 and ord(bytes[2]) ==
+      0x73 and ord(bytes[3]) == 0x6d
 
 # wrap an import (for wasm)
-# TODO: can I generate sig?
-template wasm_import*(name: untyped, sig: string, body: untyped):untyped {.dirty.} =
-  let name = proc (runtime: PRuntime; ctx: PImportContext; sp: ptr uint64; mem: pointer): pointer {.cdecl.} =
+# TODO: can I generate sig and get name from proc in body?
+template wasm_import*(name: untyped, sig: string,
+    body: untyped): untyped {.dirty.} =
+  let name = proc (runtime: PRuntime; ctx: PImportContext; sp: ptr uint64;
+      mem: pointer): pointer {.cdecl.} =
     let wrapper = body
     var s = sp.stackPtrToUint()
     callHost(wrapper, s, mem)
@@ -61,13 +65,13 @@ var null0_files*: ZipArchiveReader
 var null0_images*: seq[Context]
 var null0_fonts*: seq[Font]
 
-var null0_export_load:PFunction
-var null0_export_update:PFunction
-var null0_export_unload:PFunction
-var null0_export_buttonDown:PFunction
-var null0_export_buttonUp:PFunction
+var null0_export_load: PFunction
+var null0_export_update: PFunction
+var null0_export_unload: PFunction
+var null0_export_buttonDown: PFunction
+var null0_export_buttonUp: PFunction
 
-var null0_dir:string 
+var null0_dir: string
 
 # wrapped function to read a file from cart/dir
 proc null0_readfile(filename: string): string =
@@ -111,11 +115,12 @@ proc null0_load*(filename: string, debug: bool = false) =
 
   if debug:
     echo fmt"{filename} has a valid main.wasm."
-  
+
   var env = m3_NewEnvironment()
   var runtime = env.m3_NewRuntime(uint32 uint16.high, nil)
   var module: PModule
-  checkWasmRes m3_ParseModule(env, module.addr, cast[ptr uint8](unsafeAddr wasmBytes[0]), uint32 len(wasmBytes))
+  checkWasmRes m3_ParseModule(env, module.addr, cast[ptr uint8](
+      unsafeAddr wasmBytes[0]), uint32 len(wasmBytes))
   checkWasmRes m3_LoadModule(runtime, module)
 
   # must create imports before getting exports
@@ -131,12 +136,14 @@ proc null0_load*(filename: string, debug: bool = false) =
 
   wasm_import(dimensions, "v(ii)"):
     proc (retPointer: uint32, sourceID: uint32) =
-      let v = WasmVector2(x: int32(null0_images[sourceID].image.width), y: int32(null0_images[sourceID].image.height))
+      let v = WasmVector2(x: int32(null0_images[sourceID].image.width),
+          y: int32(null0_images[sourceID].image.height))
       cast[ptr WasmVector2](cast[uint64](mem) + retPointer)[] = v
 
   wasm_import(draw_image, "v(ii*)"):
-    proc (targetID: uint32, sourceID:uint32, position: WasmVector2) =
-      null0_images[targetID].image.draw(null0_images[sourceID].image, translate(vec2(position)))
+    proc (targetID: uint32, sourceID: uint32, position: WasmVector2) =
+      null0_images[targetID].image.draw(null0_images[sourceID].image, translate(
+          vec2(position)))
 
   wasm_import(load_image, "i(*)"):
     proc (filename: cstring): uint32 =
@@ -145,12 +152,13 @@ proc null0_load*(filename: string, debug: bool = false) =
       return uint32 i
 
   wasm_import(new_image, "i(*)"):
-    proc (dimensions: WasmVector2):uint32 =
+    proc (dimensions: WasmVector2): uint32 =
       null0_images.add(newContext(dimensions.x, dimensions.y))
       return uint32 len(null0_images) - 1
 
   wasm_import(rectangle, "v(i**i)"):
-    proc (targetID: uint32, position:WasmVector2, dimensions:WasmVector2, borderSize:uint32) =
+    proc (targetID: uint32, position: WasmVector2, dimensions: WasmVector2,
+        borderSize: uint32) =
       null0_images[targetID].lineWidth = float32 borderSize
       let shape = rect(vec2(position), vec2(dimensions))
       null0_images[targetID].fillRect(shape)
@@ -158,7 +166,8 @@ proc null0_load*(filename: string, debug: bool = false) =
         null0_images[targetID].strokeRect(shape)
 
   wasm_import(circle, "v(i*ii)"):
-    proc (targetID: uint32, position:WasmVector2, radius: uint32, borderSize:uint32) =
+    proc (targetID: uint32, position: WasmVector2, radius: uint32,
+        borderSize: uint32) =
       null0_images[targetID].lineWidth = float32 borderSize
       let shape = circle(vec2(position), float32 radius)
       null0_images[targetID].fillCircle(shape)
@@ -166,20 +175,26 @@ proc null0_load*(filename: string, debug: bool = false) =
         null0_images[targetID].strokeCircle(shape)
 
   wasm_import(rectangle_round, "v(i**iiiii)"):
-    proc (targetID: uint32, position:WasmVector2, dimensions:WasmVector2, nw: uint32, ne: uint32, se: uint32, sw: uint32, borderSize:uint32) =
+    proc (targetID: uint32, position: WasmVector2, dimensions: WasmVector2,
+        nw: uint32, ne: uint32, se: uint32, sw: uint32, borderSize: uint32) =
       null0_images[targetID].lineWidth = float32 borderSize
       let shape = rect(vec2(position), vec2(dimensions))
-      null0_images[targetID].fillRoundedRect(shape, float32 nw, float32 ne, float32 se, float32 sw)
+      null0_images[targetID].fillRoundedRect(shape, float32 nw, float32 ne,
+          float32 se, float32 sw)
       if borderSize != 0:
-        null0_images[targetID].strokeRoundedRect(shape, float32 nw, float32 ne, float32 se, float32 sw)
+        null0_images[targetID].strokeRoundedRect(shape, float32 nw, float32 ne,
+            float32 se, float32 sw)
 
   # (targetID: Image, position:Vector2, dimensions:Vector2, borderSize:uint32 = 0)
   wasm_import(ellipse, "v(i**i)"):
-    proc (targetID: uint32, position:WasmVector2, dimensions:WasmVector2, borderSize:uint32) =
+    proc (targetID: uint32, position: WasmVector2, dimensions: WasmVector2,
+        borderSize: uint32) =
       null0_images[targetID].lineWidth = float32 borderSize
-      null0_images[targetID].fillEllipse(vec2(position), float32 dimensions.x, float32 dimensions.y)
+      null0_images[targetID].fillEllipse(vec2(position), float32 dimensions.x,
+          float32 dimensions.y)
       if borderSize != 0:
-        null0_images[targetID].strokeEllipse(vec2(position), float32 dimensions.x, float32 dimensions.y)
+        null0_images[targetID].strokeEllipse(vec2(position),
+            float32 dimensions.x, float32 dimensions.y)
 
   try:
     checkWasmRes m3_FindFunction(addr null0_export_load, runtime, "load")

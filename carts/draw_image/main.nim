@@ -1,7 +1,7 @@
-var logo:Image
-var offset:Vector2
-var logoSize:Vector2
-var screenSize:Vector2
+var logo: Image
+var offset: Vector2
+var logoSize: Vector2
+var screenSize: Vector2
 
 load:
   trace("Hello from draw_image")
