@@ -11,6 +11,7 @@ load:
 update:
   clear(BLACK)
   offset.y = (int32(gameTime * 1000) mod (240+137)) - 137
+  #offset.y = 51
   logo.draw(offset)
 
 unload:

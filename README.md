@@ -5,6 +5,7 @@ A fun and easy cross-language game-engine.
 The idea is a cross-language, cross-platform game-engine for making nice 2D games. Fast, fun, and easy! You write your game in whatever language you like, and it will run (with no recompile) on any platform, including the web and low-end devices.
 
 ![draw_shapes](./screenshots/draw_shapes.png)
+![draw_image](./screenshots/draw_image.png)
 
 ## Get Started
 
