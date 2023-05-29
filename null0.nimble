@@ -1,11 +1,11 @@
 # Package
 
-version       = "0.0.0"
-author        = "David Konsumer"
-description   = "A fun and easy cross-language game-engine"
-license       = "MIT"
-srcDir        = "src"
-bin           = @["null0"]
+version = "0.0.0"
+author = "David Konsumer"
+description = "A fun and easy cross-language game-engine"
+license = "MIT"
+srcDir = "src"
+bin = @["null0"]
 
 
 # Dependencies
@@ -16,7 +16,7 @@ requires "nim >= 1.6.12"
 
 requires "zippy"
 requires "pixie"
-requires "wasm3"
+requires "https://github.com/beef331/wasm3.git"
 
 # These are used in the runtime
 
