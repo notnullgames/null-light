@@ -90,24 +90,23 @@ proc null0_load*(filename: string, debug: bool = false) =
 
   var wasmBytes: string
 
-  if debug:
-    if dirExists(filename):
-      null0_dir = filename
+  if dirExists(filename):
+    null0_dir = filename
+    wasmBytes = null0_readfile("main.wasm")
+  elif fileExists(filename):
+    let b = readFile(filename)
+    if isZip(b):
+      null0_files = openZipArchive(filename)
       wasmBytes = null0_readfile("main.wasm")
-    elif fileExists(filename):
-      let b = readFile(filename)
-      if isZip(b):
-        null0_files = openZipArchive(filename)
-        wasmBytes = null0_readfile("main.wasm")
-      elif isWasm(b):
-        wasmBytes = b
-        null0_dir = parentDir(filename)
-      else:
-        echo fmt"{filename} is a file, but it's invalid."
-        quit(1)
+    elif isWasm(b):
+      wasmBytes = b
+      null0_dir = parentDir(filename)
     else:
-      echo fmt"{filename} does not exist."
+      echo fmt"{filename} is a file, but it's invalid."
       quit(1)
+  else:
+    echo fmt"{filename} does not exist."
+    quit(1)
 
   if not isWasm(wasmBytes):
     echo "Your main.wasm is not vaild."
