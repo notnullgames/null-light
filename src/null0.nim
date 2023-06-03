@@ -66,12 +66,14 @@ if args["build"]:
 
 
 if args["<cart>"]:
-  null0_load($args["<cart>"], args["--debug"])
+  var null0:Null0Cart
+
+  null0.load($args["<cart>"], args["--debug"])
 
   if args["--screenshot"]:
-    null0_update()
-    null0_images[0].image.writeFile($args["--screenshot"])
-    null0_unload()
+    null0.update()
+    null0.images[0].image.writeFile($args["--screenshot"])
+    null0.unload()
     quit(0)
 
   var frame: int
@@ -89,7 +91,7 @@ if args["<cart>"]:
 
   window.onFrame = proc() =
     frame.inc()
-    null0_update()
+    null0.update()
 
     # adjust scale/offset to fill the window nicely
     fX = float(window.size.x)
@@ -105,7 +107,7 @@ if args["<cart>"]:
 
     # TODO: this is clearing all the tiles every frame, which is very inefficient.
     bxy.clearAtlas()
-    bxy.addImage("screen" & $frame, null0_images[0].image)
+    bxy.addImage("screen" & $frame, null0.images[0].image)
 
     bxy.beginFrame(window.size)
     bxy.saveTransform()
@@ -119,5 +121,5 @@ if args["<cart>"]:
   while not window.closeRequested:
     pollEvents()
 
-  null0_unload()
+  null0.unload()
 
