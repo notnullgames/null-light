@@ -57,10 +57,6 @@ proc rgba(i: WasmColor): ColorRGBA =
   return rgba(i.r, i.g, i.b, i.a)
 
 
-proc wasm_nop (runtime: PRuntime; ctx: PImportContext; sp: ptr uint64; mem: pointer): pointer {.cdecl.} =
-  discard
-
-
 # TODO: I can't figure out how to contain these in a shared object, so they are just globals for now
 var null0_time_start*: float
 var null0_files*: ZipArchiveReader
@@ -180,19 +176,6 @@ proc null0_load*(filename: string, debug: bool = false) =
       null0_images[targetID].fillEllipse(vec2(position), float32 dimensions.x, float32 dimensions.y)
       if borderSize != 0:
         null0_images[targetID].strokeEllipse(vec2(position), float32 dimensions.x, float32 dimensions.y)
-
-  var r = m3_LinkRawFunction(module, cstring "wasi_snapshot_preview1", cstring "fd_close", cstring "i(i)", wasm_nop)
-  if not r.isNil():
-    echo "fd_close: ", $r
-  r = m3_LinkRawFunction(module, cstring "wasi_snapshot_preview1", cstring "fd_fdstat_get", cstring "i(i*)", wasm_nop)
-  if not r.isNil():
-    echo "fd_fdstat_get: ", $r
-  r = m3_LinkRawFunction(module, cstring "wasi_snapshot_preview1", cstring "fd_write", cstring "i(i*i*)", wasm_nop)
-  if not r.isNil():
-    echo "fd_write: ", $r
-  r = m3_LinkRawFunction(module, cstring "wasi_snapshot_preview1", cstring "fd_seek", cstring  "i(iIi*)", wasm_nop)
-  if not r.isNil():
-    echo "fd_seek: ", $r
 
   try:
     checkWasmRes m3_FindFunction(addr null0_export_load, runtime, "load")
