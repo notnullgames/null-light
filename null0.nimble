@@ -46,5 +46,5 @@ task cart_run, "Build and run a demo cart":
   exec(fmt"cd {dir} && nim c main.nim && zip ../../{name}.null0 -r * -x '*.DS_Store' -x '*.nim' && mv main.wasm ../../{name}.wasm")
   exec(fmt"nimble run -- --debug {name}.null0")
 
-task release, "Build a ddownload package for a release":
+task release, "Build a download-package for a release":
   discard

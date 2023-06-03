@@ -92,7 +92,7 @@ const screen*: Image = 0
 proc vec2*(x: int32, y: int32): Vector2 =
   return Vector2(x: x, y: y)
 
-proc rgba(r: uint8, g: uint8, b: uint8, a: uint8): Color =
+proc rgba*(r: uint8, g: uint8, b: uint8, a: uint8): Color =
   return Color(r: r, g: g, b: b, a: a)
 
 proc `-`*(a, b: Vector2): Vector2 =
@@ -133,29 +133,20 @@ proc load_image*(filename: cstring): Image {.importc, cdecl.}
 # Draw an image on another image
 proc draw_image*(targetID: Image, sourceID: Image, position: Vector2) {.importc, cdecl.}
 
-# Get height/width of an image
-proc dimensions*(sourceID: Image): Vector2 {.importc, cdecl.}
-
 # Draw a rectangle on image
-proc rectangle*(targetID: Image, position: Vector2, dimensions: Vector2,
-    borderSize: uint32 = 0) {.importc, cdecl.}
+proc rectangle*(targetID: Image, position: Vector2, dimensions: Vector2, borderSize: uint32 = 0) {.importc, cdecl.}
 
 # Draw a rounded rectangle on image
-proc rectangle_round(targetID: Image, position: Vector2, dimensions: Vector2,
-    nw: uint32, ne: uint32, se: uint32, sw: uint32,
-    borderSize: uint32 = 0) {.importc, cdecl.}
+proc rectangle_round(targetID: Image, position: Vector2, dimensions: Vector2, nw: uint32, ne: uint32, se: uint32, sw: uint32, borderSize: uint32 = 0) {.importc, cdecl.}
 
 # Draw a rectangle on image
-proc circle*(targetID: Image, position: Vector2, radius: uint32,
-    borderSize: uint32 = 0) {.importc, cdecl.}
+proc circle*(targetID: Image, position: Vector2, radius: uint32, borderSize: uint32 = 0) {.importc, cdecl.}
 
 # Draw an ellipse on image
-proc ellipse*(targetID: Image, position: Vector2, dimensions: Vector2,
-    borderSize: uint32 = 0) {.importc, cdecl.}
+proc ellipse*(targetID: Image, position: Vector2, dimensions: Vector2, borderSize: uint32 = 0) {.importc, cdecl.}
 
 # Set current fill/border color on image
-proc set_color*(targetID: Image, fillColor: Color = BLACK,
-    borderColor: Color = BLANK) {.importc, cdecl.}
+proc set_color*(targetID: Image, fillColor: Color = BLACK, borderColor: Color = BLANK) {.importc, cdecl.}
 
 ### Wrappers
 
@@ -178,21 +169,16 @@ proc clear*(targetID: Image, color: Color = BLACK) =
 proc clear*(color: Color = BLACK) =
   clear(screen, color)
 
-proc rectangle*(position: Vector2, dimensions: Vector2,
-    borderSize: uint32 = 0) =
+proc rectangle*(position: Vector2, dimensions: Vector2, borderSize: uint32 = 0) =
   rectangle(screen, position, dimensions, borderSize)
 
-proc rectangle_round*(position: Vector2, dimensions: Vector2, nw: uint32,
-    ne: uint32, se: uint32, sw: uint32, borderSize: uint32 = 0) =
+proc rectangle_round*(position: Vector2, dimensions: Vector2, nw: uint32, ne: uint32, se: uint32, sw: uint32, borderSize: uint32 = 0) =
   rectangle_round(screen, position, dimensions, nw, nw, se, sw, borderSize)
 
-proc rectangle_round*(targetID: Image, position: Vector2, dimensions: Vector2,
-    amount: uint32, borderSize: uint32 = 0) =
-  rectangle_round(targetID, position, dimensions, amount, amount, amount,
-      amount, borderSize)
+proc rectangle_round*(targetID: Image, position: Vector2, dimensions: Vector2, amount: uint32, borderSize: uint32 = 0) =
+  rectangle_round(targetID, position, dimensions, amount, amount, amount, amount, borderSize)
 
-proc rectangle_round*(position: Vector2, dimensions: Vector2, amount: uint32,
-    borderSize: uint32 = 0) =
+proc rectangle_round*(position: Vector2, dimensions: Vector2, amount: uint32, borderSize: uint32 = 0) =
   rectangle_round(screen, position, dimensions, amount, amount, amount, amount, borderSize)
 
 proc circle*(position: Vector2, radius: uint32, borderSize: uint32 = 0) =
