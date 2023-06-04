@@ -33,7 +33,7 @@ task clean, "Cleans up files":
   exec "rm -f null0 *.wasm *.null0 tests/test_api"
 
 # TODO: lookup cart-type from game.json (this can only build nim, but other builds could be triggered)
-# TODO: use zippy to build the cart
+# TODO: use zippy to build the cart?
 
 task cart, "Build a demo cart":
   let name = paramStr(paramCount())

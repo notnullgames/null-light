@@ -57,3 +57,4 @@ Use `<@GITHUB_USER>` to link the game to your github account.
 - [@guzbo](https://github.com/guzbo) and [@treeform](https://github.com/treeform) made many pieces of the engine (pixie, zippy, etc)
 - [@beef331](https://github.com/beef331) made a nice wasm3 wrapper
 - [@RobLoach](https://github.com/RobLoach) makes tons of useful libraries, although not used here directly, is always very helpful with advice & ideas
+- [manaspace](https://blogfonts.com/manaspace.font) is the default font. It was made by codeman38, and it's pretty sick. Licensing terms are essentially "Don't sell this"

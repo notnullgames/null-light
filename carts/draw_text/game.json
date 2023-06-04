@@ -1,0 +1,7 @@
+{
+  "name": "Draw Text",
+  "description": "Demo that draws some text",
+  "language": "nim",
+  "tags": ["demo", "drawing", "text", "font"],
+  "author": "David Konsumer <@konsumer>"
+}

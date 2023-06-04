@@ -13,6 +13,7 @@ type
     x*: int32
     y*: int32
   Image* = uint32
+  Font* = uint32
 
 
 # macro for your exports that creates an emscripten export
@@ -148,6 +149,12 @@ proc ellipse*(targetID: Image, position: Vector2, dimensions: Vector2, borderSiz
 # Set current fill/border color on image
 proc set_color*(targetID: Image, fillColor: Color = BLACK, borderColor: Color = BLANK) {.importc, cdecl.}
 
+# Load a font
+proc load_font*(filename: cstring, size: uint32 = 12): Font {.importc, cdecl.}
+
+# Draw text on a screen/canvas dimensions=Vector2(0, 0) wll not wrap
+proc draw_text*(targetID: Image, text: cstring, position: Vector2, dimensions: Vector2 = vec2(0, 0), fontID: Font = 0, borderSize: uint32 = 0) {.importc, cdecl.}
+
 ### Wrappers
 
 proc trace*(thing: auto) =
@@ -189,3 +196,9 @@ proc ellipse*(position: Vector2, dimensions: Vector2, borderSize: uint32 = 0) =
 
 proc set_color*(fillColor: Color = BLACK, borderColor: Color = BLANK) =
   set_color(screen, fillColor, borderColor)
+
+proc draw_text*(text: cstring, position: Vector2, dimensions: Vector2 = vec2(0, 0), fontID: Font = 0, borderSize: uint32 = 0) =
+  draw_text(screen, cstring text, position, dimensions, fontID, borderSize)
+
+proc draw_text*(fontID: Font = 0, text: string, position: Vector2, targetID: Image = screen, dimensions: Vector2 = vec2(0, 0), borderSize: uint32 = 0) =
+  draw_text(targetID, cstring text, position, dimensions, fontID, borderSize)

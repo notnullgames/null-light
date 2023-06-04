@@ -1,11 +1,26 @@
 import std/os
 import std/strformat
+import std/strutils
 import std/times
 import pixie
 import wasm3
 import wasm3/wasm3c
 import wasm3/wasmconversions
 import zippy/ziparchives
+
+# This is how data is passed over the wasm-barrier
+type
+  WasmVector2 {.packed.} = object
+    x: int32
+    y: int32
+  WasmColor {.packed.} = object
+    b: uint8
+    g: uint8
+    r: uint8
+    a: uint8
+
+# embed a fond
+const fontDefault = staticRead("./default.ttf")
 
 proc isZip*(bytes: string): bool =
   ## detect if some bytes (at least 4) are a zip file
@@ -28,17 +43,6 @@ template wasm_import*(name: untyped, sig: string,
   except WasmError as e:
     if debug:
       echo "import ", name.astToStr, ": ", e.msg
-
-# This is how data is passed over the wasm-barrier
-type
-  WasmVector2 {.packed.} = object
-    x: int32
-    y: int32
-  WasmColor {.packed.} = object
-    b: uint8
-    g: uint8
-    r: uint8
-    a: uint8
 
 proc fromWasm*(result: var WasmVector2, sp: var uint64, mem: pointer) =
   var i: uint32
@@ -79,12 +83,30 @@ proc null0_readfile(filename: string): string =
     # TODO: this is not really secure (no sandboxing.) dirs are for dev/debugging so maybe that is OK
     return readFile(fmt"{null0_dir}/{filename}")
 
+
+proc loadFontFromMemory(data: string, ext: string): Font =
+  var typeface =
+    case ext:
+      of ".ttf":
+        parseTtf(data)
+      of ".otf":
+        parseOtf(data)
+      of ".svg":
+        parseSvgFont(data)
+      else:
+        raise newException(PixieError, "Unsupported font format")
+  return newFont(typeface)
+
 proc null0_load*(filename: string, debug: bool = false) =
   ## Starts the null0 engine on a cart (which can be a wasm/zip file or a directory)
   null0_time_start = cpuTime()
 
   # image 0 is "screen"
   null0_images.add(newContext(320, 240))
+
+  # font 0 is default Manaspace
+  null0_fonts.add(loadFontFromMemory(fontDefault, ".ttf"))
+  null0_fonts[0].size = 12
 
   var wasmBytes: string
 
@@ -169,13 +191,34 @@ proc null0_load*(filename: string, debug: bool = false) =
       if borderSize != 0:
         null0_images[targetID].strokeRoundedRect(shape, float32 nw, float32 ne, float32 se, float32 sw)
 
-  # (targetID: Image, position:Vector2, dimensions:Vector2, borderSize:uint32 = 0)
   wasm_import(ellipse, "v(i**i)"):
     proc (targetID: uint32, position: WasmVector2, dimensions: WasmVector2, borderSize: uint32) =
       null0_images[targetID].lineWidth = float32 borderSize
       null0_images[targetID].fillEllipse(vec2(position), float32 dimensions.x, float32 dimensions.y)
       if borderSize != 0:
         null0_images[targetID].strokeEllipse(vec2(position), float32 dimensions.x, float32 dimensions.y)
+
+  wasm_import(load_font, "i(*i)"):
+    proc (filename: cstring, size: uint32 = 12): uint32 =
+      let i = len(null0_fonts)
+      null0_fonts.add(loadFontFromMemory(null0_readfile($filename), splitFile($filename).ext.toLowerAscii()))
+      null0_fonts[i].size = float32 size
+      return uint32 i
+
+  wasm_import(draw_text, "v(i***ii)"):
+    proc (targetID: uint32, text:cstring, position: WasmVector2, dimensions: WasmVector2, fontID: uint32 = 0, borderSize: uint32 = 0) =
+      var image = null0_images[targetID].image
+      var font = null0_fonts[fontID]
+      #echo fmt("draw_text({targetID}, {text}, {position}, {dimensions}, {fontID}, {borderSize})")
+      if not image.isNil() and not font.isNil():
+        var dim = vec2(dimensions)
+        if dim.x == 0 and dim.y == 0:
+          dim.x = float.high
+          dim.y = float.high
+        let ts = font.typeset($text, dim)
+        image.fillText(ts, translate(vec2(position)))
+        if borderSize != 0:
+          image.strokeText(ts, translate(vec2(position)))
 
   try:
     checkWasmRes m3_FindFunction(addr null0_export_load, runtime, "load")
