@@ -54,7 +54,7 @@ These are things specific to graphics sub-system, which is mostly [pixie](https:
 - [ ] [do vector in GL-space](https://github.com/rev22/svgl) instead of pixie?
 - [ ] layers? If each layer was set to a type (vector, image, text) more info could be shared and it could be better optimized at end
 - [ ] `clear()` should be in engine, and use `fill()` or even better:  GL clear
-- [ ] efficient tilemap, in engine. See [this](https://github.com/davudk/OpenGL-TileMap-Demos#4-geometry-shader-rendering) for ideas
+- [ ] efficient tilemap, in engine. See [this](https://github.com/davudk/OpenGL-TileMap-Demos) for ideas
 - [ ] efficient sprite-animation, in engine
 - [ ] TTF fonts should work in ctx-space (respond to fill change, etc) should these be pre-loaded as images? (to work better with GL/tilemap)
 - [ ] support image-based fonts (tty/bm)
