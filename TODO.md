@@ -1,12 +1,19 @@
+# null0 todo
+
+There is a lot of things I would like to do with this engine. Some things may get checked if they are "resolved" not necessarily if they are "done", like many are explorations of ideas, and questions about how things should be implemented.
+
 ### Engine
 
-These are thing related to the actual engine, and not specific to any subsystem.
+These are thing related to the actual engine/runtime, and not specific to any subsystem.
 
 - [X] basic cart loading
+- [X] zip cart support
+- [X] raw wasm support
+- [X] dir-as-root support
 - [ ] namespace all to `null0` in wasm
 - [ ] WASI? It's a lot more complicated, but it would make more built-in language stuff work (`echo`, `readFile`, etc)
 - [ ] `main()` instead of `load()` for C/nim/etc? Might make it seem more "regular"
-- [ ] drop `update()` time param and use `time()` to get clock-time, or WASI equiv
+- [ ] drop `update()` time param and use `time()` to get clock-time, or WASI equiv (careful with time-resolution for time-based attacks)
 - [ ] `random()`, or WASI equiv
 - [ ] retroarch core that can do cheats, for enabling extended features like networking, save/restore, and GL stuff
 - [ ] hot-reloading: reload the code on change, but keep the state
@@ -15,6 +22,12 @@ These are thing related to the actual engine, and not specific to any subsystem.
 - [ ] generate more: docs, hosts, cart-headers, etc, could all be mostly generated from central definition
 - [ ] embedded host: esp32, no GL, etc.
 - [ ] optimize for smaller cart-wasm (clang, etc)
+- [ ] `null0 new`
+- [ ] `null0 watch`
+- [ ] `null0 build`
+- [ ] `reload()` callback so users can tune what happens on reload (dev)
+- [ ] allow headless for making services that can be connected to with networking
+- [ ] native exec access (behind flag)
 
 
 ### Web
@@ -34,9 +47,11 @@ This is stuff related to web-runtime & docs
 These are things specific to graphics sub-system, which is mostly [pixie](https://github.com/treeform/pixie).
 
 - [X] basic image-loading
-- [X] basic vetor drawing
+- [X] basic vector (shape) drawing
 - [X] basic TTF support
-- [ ] rethink how graphics work: don't wipe all frames, optimize for opengl (preload images in tilemap, compose at end, in GL-space, [do vector in GL-space](https://github.com/rev22/svgl) instead of pixie?)
+- [ ] replace all vector operations with single SVG op? more code would need to be written wasm-side, but it should support more backends and require less in host.
+- [ ] rethink how graphics work: don't wipe all frames, optimize for opengl (preload images in tilemap, compose at end, in GL-space
+- [ ] [do vector in GL-space](https://github.com/rev22/svgl) instead of pixie?)
 - [ ] layers? If each layer was set to a type (vector, image, text) more info could be shared and it could be better optimized at end
 - [ ] `clear()` should be in engine, and use `fill()` or even better:  GL clear
 - [ ] efficient tilemap, in engine
@@ -49,10 +64,11 @@ These are things specific to graphics sub-system, which is mostly [pixie](https:
 - [ ] image-level GLSL shaders
 - [ ] allow changing the window resolution?
 - [ ] allow trigger fullscreen
+- [ ] allow headless (no graphics)
 
 ### Sound
 
-This is all the sound stuff. I am thinking [slappy](https://github.com/treeform/slappy) would work well.
+This is all the sound stuff. I am thinking [slappy](https://github.com/treeform/slappy) would work well for engine.
 
 - [ ] basic OGG/WAV files
 - [ ] positional sound
@@ -86,10 +102,11 @@ Things related to networking with other carts & servers.
 
 Basic input things.
 
-- [ ] basic keyboard mapped controller input
+- [ ] basic keyboard mapped controller input (emulate SNES-era controller with keys + basic gamepad)
 - [ ] gamepad database for smoothing out differences between controllers
-- [ ] send the controller number along with `buttonDown`/`buttonUp` for local multiplayer
+- [ ] send the controller number along with `buttonDown`/`buttonUp` for local multiplayer and assign keyboard to it's own number
 - [ ] `keyDown`/`keyUp`/`mouseMove`/`mouseDown`/`mouseUp` for non-controller input (trigger `buttonDown` and `keyDown` for overlapping key, for example)
+- [ ] allow headless (no input)
 
 
 ### Carts
@@ -97,6 +114,7 @@ Basic input things.
 Carts to run in engine.
 
 - [ ] all API functions should be called in a demo
+- [ ] demos should be ported to many languages
 - [ ] finish flappybird
 - [ ] host a cart-challenge
 - [ ] some classics (atari/nes/snes era)
