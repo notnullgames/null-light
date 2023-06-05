@@ -198,24 +198,27 @@ proc null0_load*(filename: string, debug: bool = false) =
       if borderSize != 0:
         null0_images[targetID].strokeEllipse(vec2(position), float32 dimensions.x, float32 dimensions.y)
 
-  wasm_import(load_font, "i(*i)"):
-    proc (filename: cstring, size: uint32 = 12): uint32 =
+  wasm_import(load_font, "i(*i*)"):
+    proc (filename: cstring, size: uint32 = 12, color: WasmColor): uint32 =
       let i = len(null0_fonts)
-      null0_fonts.add(loadFontFromMemory(null0_readfile($filename), splitFile($filename).ext.toLowerAscii()))
-      null0_fonts[i].size = float32 size
+      let ext = splitFile($filename).ext.toLowerAscii()
+      var font = loadFontFromMemory(null0_readfile($filename), ext)
+      font.size = float32 size
+      font.paint = rgba(color)
+      null0_fonts.add(font)
       return uint32 i
 
-  wasm_import(draw_text, "v(i***ii)"):
-    proc (targetID: uint32, text:cstring, position: WasmVector2, dimensions: WasmVector2, fontID: uint32 = 0, borderSize: uint32 = 0) =
+  wasm_import(draw_text, "v(i***iiiii)"):
+    proc (targetID: uint32, text:cstring, position: WasmVector2, dimensions: WasmVector2, fontID: uint32 = 0, borderSize: uint32 = 0, hAlign = LeftAlign, vAlign = TopAlign, wrap = true) =
       var image = null0_images[targetID].image
       var font = null0_fonts[fontID]
-      #echo fmt("draw_text({targetID}, {text}, {position}, {dimensions}, {fontID}, {borderSize})")
       if not image.isNil() and not font.isNil():
         var dim = vec2(dimensions)
         if dim.x == 0 and dim.y == 0:
-          dim.x = float.high
-          dim.y = float.high
-        let ts = font.typeset($text, dim)
+          dim.x = 1024 * 1024 * 1024 * 1024
+          dim.y = 1024 * 1024 * 1024 * 1024
+        # TODO: would be cool follow canvas fill/stroke color, but it does not (because this is an image op, not ctx)
+        let ts = typeset(font, $text, dim, hAlign, vAlign, wrap)
         image.fillText(ts, translate(vec2(position)))
         if borderSize != 0:
           image.strokeText(ts, translate(vec2(position)))

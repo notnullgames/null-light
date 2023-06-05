@@ -14,6 +14,14 @@ type
     y*: int32
   Image* = uint32
   Font* = uint32
+  HorizontalAlignment* = enum
+    LeftAlign
+    CenterAlign
+    RightAlign
+  VerticalAlignment* = enum
+    TopAlign
+    MiddleAlign
+    BottomAlign
 
 
 # macro for your exports that creates an emscripten export
@@ -150,10 +158,10 @@ proc ellipse*(targetID: Image, position: Vector2, dimensions: Vector2, borderSiz
 proc set_color*(targetID: Image, fillColor: Color = BLACK, borderColor: Color = BLANK) {.importc, cdecl.}
 
 # Load a font
-proc load_font*(filename: cstring, size: uint32 = 12): Font {.importc, cdecl.}
+proc load_font*(filename: cstring, size: uint32 = 20, color: Color = BLACK): Font {.importc, cdecl.}
 
 # Draw text on a screen/canvas dimensions=Vector2(0, 0) wll not wrap
-proc draw_text*(targetID: Image, text: cstring, position: Vector2, dimensions: Vector2 = vec2(0, 0), fontID: Font = 0, borderSize: uint32 = 0) {.importc, cdecl.}
+proc draw_text*(targetID: Image, text: cstring, position: Vector2, dimensions: Vector2 = vec2(0, 0), fontID: Font = 0, borderSize: uint32 = 0, hAlign = LeftAlign, vAlign = TopAlign, wrap = true) {.importc, cdecl.}
 
 ### Wrappers
 
@@ -169,6 +177,7 @@ proc draw_image*(sourceID: Image, position: Vector2) =
 proc draw*(sourceID: Image, position: Vector2) =
   draw_image(screen, sourceID, position)
 
+# TODO: there is a fill() operation that does this a bit better
 proc clear*(targetID: Image, color: Color = BLACK) =
   set_color(targetID, color)
   rectangle(targetID, vec2(0, 0), vec2(320, 240), 0)
@@ -197,8 +206,8 @@ proc ellipse*(position: Vector2, dimensions: Vector2, borderSize: uint32 = 0) =
 proc set_color*(fillColor: Color = BLACK, borderColor: Color = BLANK) =
   set_color(screen, fillColor, borderColor)
 
-proc draw_text*(text: cstring, position: Vector2, dimensions: Vector2 = vec2(0, 0), fontID: Font = 0, borderSize: uint32 = 0) =
-  draw_text(screen, cstring text, position, dimensions, fontID, borderSize)
+proc draw_text*(text: cstring, position: Vector2, dimensions: Vector2 = vec2(0, 0), fontID: Font = 0, borderSize: uint32 = 0, hAlign = LeftAlign, vAlign = TopAlign, wrap = true) =
+  draw_text(screen, cstring text, position, dimensions, fontID, borderSize, hAlign, vAlign, wrap)
 
-proc draw_text*(fontID: Font = 0, text: string, position: Vector2, targetID: Image = screen, dimensions: Vector2 = vec2(0, 0), borderSize: uint32 = 0) =
-  draw_text(targetID, cstring text, position, dimensions, fontID, borderSize)
+proc draw_text*(fontID: Font = 0, text: string, position: Vector2, targetID: Image = screen, dimensions: Vector2 = vec2(0, 0), borderSize: uint32 = 0, hAlign = LeftAlign, vAlign = TopAlign, wrap = true) =
+  draw_text(targetID, cstring text, position, dimensions, fontID, borderSize, hAlign, vAlign, wrap)
