@@ -163,6 +163,9 @@ proc load_font*(filename: cstring, size: uint32 = 20, color: Color = BLACK): Fon
 # Draw text on a screen/canvas dimensions=Vector2(0, 0) wll not wrap
 proc draw_text*(targetID: Image, text: cstring, position: Vector2, dimensions: Vector2 = vec2(0, 0), fontID: Font = 0, borderSize: uint32 = 0, hAlign = LeftAlign, vAlign = TopAlign, wrap = true) {.importc, cdecl.}
 
+# Return Frames Per Second
+proc fps*():float32 {.importc, cdecl.}
+
 ### Wrappers
 
 proc trace*(thing: auto) =

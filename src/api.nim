@@ -208,6 +208,12 @@ proc null0_load*(filename: string, debug: bool = false) =
       null0_fonts.add(font)
       return uint32 i
 
+  wasm_import(fps, "f()"):
+    proc (): float32 =
+      return float32 0
+
+  # TODO: would be cool follow canvas fill/stroke color, but it does not (because this is an image op, not ctx)
+  # probly need to rethink how fonts are loaded & drawn
   wasm_import(draw_text, "v(i***iiiii)"):
     proc (targetID: uint32, text:cstring, position: WasmVector2, dimensions: WasmVector2, fontID: uint32 = 0, borderSize: uint32 = 0, hAlign = LeftAlign, vAlign = TopAlign, wrap = true) =
       var image = null0_images[targetID].image
@@ -217,7 +223,6 @@ proc null0_load*(filename: string, debug: bool = false) =
         if dim.x == 0 and dim.y == 0:
           dim.x = 1024 * 1024 * 1024 * 1024
           dim.y = 1024 * 1024 * 1024 * 1024
-        # TODO: would be cool follow canvas fill/stroke color, but it does not (because this is an image op, not ctx)
         let ts = typeset(font, $text, dim, hAlign, vAlign, wrap)
         image.fillText(ts, translate(vec2(position)))
         if borderSize != 0:
