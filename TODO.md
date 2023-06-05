@@ -15,9 +15,9 @@ These are thing related to the actual engine/runtime, and not specific to any su
 - [ ] `main()` instead of `load()` for C/nim/etc? Might make it seem more "regular"
 - [ ] drop `update()` time param and use `time()` to get clock-time, or WASI equiv (careful with time-resolution for time-based attacks)
 - [ ] `random()`, or WASI equiv
-- [ ] retroarch core that can do cheats, for enabling extended features like networking, save/restore, and GL stuff
+- [ ] retroarch core that can do cheats, for enabling extended features like networking, and save/restore/GL stuff
 - [ ] hot-reloading: reload the code on change, but keep the state
-- [ ] Interpreted main.wasm: Make a few, like quickjs, wren, etc. Would make dev go faster with hot-reloading (no build)
+- [ ] Interpreted main.wasm: Make a few, like quickjs, wren, nimscript, etc. Would make dev go faster with hot-reloading (no build)
 - [ ] more languages: basic native wasm (rust, zig, C, C++, etc) headers, and a header for assemblyscript
 - [ ] generate more: docs, hosts, cart-headers, etc, could all be mostly generated from central definition
 - [ ] embedded host: esp32, no GL, etc.
@@ -54,10 +54,10 @@ These are things specific to graphics sub-system, which is mostly [pixie](https:
 - [ ] [do vector in GL-space](https://github.com/rev22/svgl) instead of pixie?
 - [ ] layers? If each layer was set to a type (vector, image, text) more info could be shared and it could be better optimized at end
 - [ ] `clear()` should be in engine, and use `fill()` or even better:  GL clear
-- [ ] efficient tilemap, in engine
+- [ ] efficient tilemap, in engine. See [this](https://github.com/davudk/OpenGL-TileMap-Demos#4-geometry-shader-rendering) for ideas
 - [ ] efficient sprite-animation, in engine
 - [ ] TTF fonts should work in ctx-space (respond to fill change, etc) should these be pre-loaded as images? (to work better with GL/tilemap)
-- [ ] support image-based fonts
+- [ ] support image-based fonts (tty/bm)
 - [ ] figure out what is wrong with `fps()`
 - [ ] transform/scale/tint/etc
 - [ ] basic 3D API, so you can try out/reuse low-level OpenGL code in whatever language you like
@@ -76,6 +76,7 @@ This is all the sound stuff. I am thinking [slappy](https://github.com/treeform/
 - [ ] [MOD/XM/etc](https://mikmod.sourceforge.net/)
 - [ ] [TTS](https://discordier.github.io/sam/)
 - [ ] effects/sound-callback (process current output stream or mic)
+- [ ] per-sound / channel callback? (for things like tracker effects)
 - [ ] Think about embeddded (ogg/mod is pretty heavy for micro)
 
 ### File
@@ -118,5 +119,7 @@ Carts to run in engine.
 - [ ] finish flappybird
 - [ ] host a cart-challenge
 - [ ] some classics (atari/nes/snes era)
+- [ ] [sfxr](https://www.drpetter.se/project_sfxr.html) editor that can save params
 - [ ] Tracker similar to lsdj/M8 that can do tts/sfxr/sample and load (and maybe save) mod
+
 
