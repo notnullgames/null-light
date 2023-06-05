@@ -54,6 +54,11 @@ The `icon.png` and `game.json` are optional, but it will be used on the (eventua
 
 Use `<@GITHUB_USER>` to link the game to your github account.
 
+
+## TODO
+
+I have a lot to do. Checkout our [TODO](TODO.md), if you want to see progress or help with something.
+
 ## Thanks
 
 - [@guzbo](https://github.com/guzbo) and [@treeform](https://github.com/treeform) made many pieces of the engine (pixie, zippy, etc)
