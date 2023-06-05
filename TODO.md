@@ -10,7 +10,7 @@ These are thing related to the actual engine, and not specific to any subsystem.
 - [ ] retroarch core that can do cheats, for enabling extended features like networking, save/restore, and GL stuff
 - [ ] hot-reloading: reload the code on change, but keep the state/position
 - [ ] Interpreted main.wasm: Make a few, like quickjs, wren, etc. Would make dev go faster with hot-reloading (no build)
-- [ ] more languages: basic native wasm (rust, zig, C, C++, etc) headers, and a headder for assemblyscript
+- [ ] more languages: basic native wasm (rust, zig, C, C++, etc) headers, and a header for assemblyscript
 
 
 ### Web
@@ -53,8 +53,8 @@ This is all the sound stuff. I am thinking [slappy](https://github.com/treeform/
 
 Things related to filesystem.
 
-- [ ] read file from cart
 - [ ] overlay-write (write to user dir, but put it in the same location as cart-files)
+- [ ] read file from cart/write-overlay
 - [ ] append write/partial read (for streaming)
 
 
