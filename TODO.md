@@ -50,8 +50,8 @@ These are things specific to graphics sub-system, which is mostly [pixie](https:
 - [X] basic vector (shape) drawing
 - [X] basic TTF support
 - [ ] replace all vector operations with single SVG op? more code would need to be written wasm-side, but it should support more backends and require less in host.
-- [ ] rethink how graphics work: don't wipe all frames, optimize for opengl (preload images in tilemap, compose at end, in GL-space
-- [ ] [do vector in GL-space](https://github.com/rev22/svgl) instead of pixie?)
+- [ ] rethink how graphics work: don't wipe all frames, optimize for opengl: preload images in tilemap, compose at end, in GL-space
+- [ ] [do vector in GL-space](https://github.com/rev22/svgl) instead of pixie?
 - [ ] layers? If each layer was set to a type (vector, image, text) more info could be shared and it could be better optimized at end
 - [ ] `clear()` should be in engine, and use `fill()` or even better:  GL clear
 - [ ] efficient tilemap, in engine
