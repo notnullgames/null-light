@@ -95,6 +95,7 @@ const MAGENTA* = Color(r: 255, g: 0, b: 255, a: 255)
 const RAYWHITE* = Color(r: 245, g: 245, b: 245, a: 255)
 
 const screen*: Image = 0
+const fontDefault*: Font = 0
 
 ## Cart-side helpers
 
