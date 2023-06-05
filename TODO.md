@@ -25,7 +25,7 @@ These are thing related to the actual engine/runtime, and not specific to any su
 - [ ] `null0 new`
 - [ ] `null0 watch`
 - [ ] `null0 build`
-- [ ] `reload()` callback so users can tune what happens on reload (dev)
+- [ ] `reload()` callback so users can tune what happens on reload (`watch`)
 - [ ] allow headless for making services that can be connected to with networking
 - [ ] native exec access (behind flag)
 
