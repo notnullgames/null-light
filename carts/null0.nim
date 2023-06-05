@@ -209,6 +209,10 @@ proc ellipse*(position: Vector2, dimensions: Vector2, borderSize: uint32 = 0) =
 proc set_color*(fillColor: Color = BLACK, borderColor: Color = BLANK) =
   set_color(screen, fillColor, borderColor)
 
+proc load_font*(size: uint32 = 20, color: Color = BLACK): Font =
+  return load_font(cstring "", size, color)
+
+
 proc draw_text*(text: cstring, position: Vector2, dimensions: Vector2 = vec2(0, 0), fontID: Font = 0, borderSize: uint32 = 0, hAlign = LeftAlign, vAlign = TopAlign, wrap = true) =
   draw_text(screen, cstring text, position, dimensions, fontID, borderSize, hAlign, vAlign, wrap)
 

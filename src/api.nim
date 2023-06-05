@@ -201,8 +201,13 @@ proc null0_load*(filename: string, debug: bool = false) =
   wasm_import(load_font, "i(*i*)"):
     proc (filename: cstring, size: uint32 = 12, color: WasmColor): uint32 =
       let i = len(null0_fonts)
-      let ext = splitFile($filename).ext.toLowerAscii()
-      var font = loadFontFromMemory(null0_readfile($filename), ext)
+      
+      var font:Font
+      if filename == "":
+        font=loadFontFromMemory(fontDefault, ".ttf")
+      else:
+        font=loadFontFromMemory(null0_readfile($filename), splitFile($filename).ext.toLowerAscii())
+
       font.size = float32 size
       font.paint = rgba(color)
       null0_fonts.add(font)
