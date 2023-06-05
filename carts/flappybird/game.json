@@ -1,0 +1,7 @@
+{
+  "name": "Flappy Bird",
+  "description": "Classic simple but addictive game",
+  "language": "nim",
+  "tags": ["basics", "flappy", "bird"],
+  "author": "David Konsumer <@konsumer>"
+}
