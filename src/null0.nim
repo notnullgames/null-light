@@ -26,21 +26,6 @@ Options:
   --screenshot=<screenshot> Take a screenshot instead of fully running the cart
 """
 
-proc heartTest(image: Image) =
-  image.fillPath(
-    """
-      M 20 60
-      A 40 40 90 0 1 100 60
-      A 40 40 90 0 1 180 60
-      Q 180 120 100 180
-      Q 20 120 20 60
-      z
-    """,
-    parseHtmlColor("#FC427B").rgba,
-    translate(vec2(60, 20))
-  )
-
-
 let args = docopt(doc, version = "null0 0.0.0")
 
 if args["--debug"]:

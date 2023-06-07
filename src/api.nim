@@ -62,7 +62,6 @@ proc rgba(i: WasmColor): ColorRGBA =
 
 
 # TODO: I can't figure out how to contain these in a shared object, so they are just globals for now
-var null0_time_start*: float
 var null0_files*: ZipArchiveReader
 var null0_images*: seq[Context]
 var null0_fonts*: seq[Font]
@@ -99,7 +98,6 @@ proc loadFontFromMemory(data: string, ext: string): Font =
 
 proc null0_load*(filename: string, debug: bool = false) =
   ## Starts the null0 engine on a cart (which can be a wasm/zip file or a directory)
-  null0_time_start = cpuTime()
 
   # image 0 is "screen"
   null0_images.add(newContext(320, 240))
@@ -213,9 +211,8 @@ proc null0_load*(filename: string, debug: bool = false) =
       null0_fonts.add(font)
       return uint32 i
 
-  wasm_import(fps, "f()"):
-    proc (): float32 =
-      return float32 0
+  wasm_import(get_time, "F()"):
+    proc (): float = getTime().toUnixFloat()
 
   # TODO: would be cool follow canvas fill/stroke color, but it does not (because this is an image op, not ctx)
   # probly need to rethink how fonts are loaded & drawn
@@ -271,5 +268,5 @@ proc null0_unload*() =
 proc null0_update*() =
   ## Update the model of the game
   if null0_export_update != nil:
-    null0_export_update.call(void, float32(cpuTime() - null0_time_start))
+    null0_export_update.call(void)
 
