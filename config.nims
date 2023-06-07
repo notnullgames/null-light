@@ -1,2 +1,2 @@
 #--define:wasm3HasWasi
---mm: orc
+--mm: arc
