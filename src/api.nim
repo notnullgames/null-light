@@ -211,7 +211,7 @@ proc null0_load*(filename: string, debug: bool = false) =
       null0_fonts.add(font)
       return uint32 i
 
-  wasm_import(get_time, "F()"):
+  wasm_import(get_time, "f()"):
     proc (): float = getTime().toUnixFloat()
 
   # TODO: would be cool follow canvas fill/stroke color, but it does not (because this is an image op, not ctx)

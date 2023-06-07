@@ -164,7 +164,7 @@ proc load_font*(filename: cstring, size: uint32 = 20, color: Color = BLACK): Fon
 # Draw text on a screen/canvas dimensions=Vector2(0, 0) wll not wrap
 proc draw_text*(targetID: Image, text: cstring, position: Vector2, dimensions: Vector2 = vec2(0, 0), fontID: Font = 0, borderSize: uint32 = 0, hAlign = LeftAlign, vAlign = TopAlign, wrap = true) {.importc, cdecl.}
 
-# Return Frames Per Second
+# Get current unix-timestamp (fractional seconds since epoch)
 proc get_time*():float {.importc, cdecl.}
 
 ### Wrappers
@@ -212,7 +212,6 @@ proc set_color*(fillColor: Color = BLACK, borderColor: Color = BLANK) =
 
 proc load_font*(size: uint32 = 20, color: Color = BLACK): Font =
   return load_font(cstring "", size, color)
-
 
 proc draw_text*(text: cstring, position: Vector2, dimensions: Vector2 = vec2(0, 0), fontID: Font = 0, borderSize: uint32 = 0, hAlign = LeftAlign, vAlign = TopAlign, wrap = true) =
   draw_text(screen, cstring text, position, dimensions, fontID, borderSize, hAlign, vAlign, wrap)
